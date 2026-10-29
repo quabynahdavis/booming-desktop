@@ -148,6 +148,45 @@ pub trait Engine: Send + Sync {
 /// Engine instance shared through Tauri's managed state.
 pub type SharedEngine = Arc<Mutex<Box<dyn Engine>>>;
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Headless smoke: engine mount must always produce a usable engine and
+    /// a coherent probe status — mpv where libmpv exists, null otherwise —
+    /// and must never panic on an engine-less machine (the whole point of
+    /// the dlopen/fallback design).
+    #[test]
+    fn mount_engine_falls_back_safely() {
+        let engine = mount_engine();
+        let status = engine.lock().expect("engine mutex").probe();
+
+        assert!(
+            matches!(status.engine.as_str(), "mpv" | "null"),
+            "unexpected backend: {:?}",
+            status.engine
+        );
+
+        match status.engine.as_str() {
+            "mpv" => {
+                assert!(
+                    status.loaded,
+                    "mpv selected but not loaded (this environment has libmpv installed)"
+                );
+                assert!(
+                    status.version.is_some(),
+                    "mpv probe must report a version string"
+                );
+            }
+            "null" => {
+                assert!(!status.loaded, "the null backend has no audio capability");
+                assert!(status.error.is_none(), "a healthy fallback reports no error");
+            }
+            _ => unreachable!("guarded by the assertion above"),
+        }
+    }
+}
+
 /// Select the strongest engine available on this machine.
 ///
 /// The mpv backend (feature `mpv`, default-on) is tried first; when its
