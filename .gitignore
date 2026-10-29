@@ -1,0 +1,19 @@
+# Node / frontend
+node_modules/
+dist/
+.vite/
+*.local
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Rust / Tauri build artifacts
+src-tauri/target/
+src-tauri/gen/schemas/
+
+# Logs & editor/OS artifacts
+*.log
+.DS_Store
+Thumbs.db

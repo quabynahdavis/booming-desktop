@@ -1,0 +1,25 @@
+{
+  "name": "booming-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Booming Desktop — offline music player (Tauri v2 + Rust, vanilla TypeScript frontend).",
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "rust:check": "cargo check --manifest-path src-tauri/Cargo.toml",
+    "rust:check:nompv": "cargo check --manifest-path src-tauri/Cargo.toml --no-default-features",
+    "rust:build": "cargo build --manifest-path src-tauri/Cargo.toml"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.0",
+    "typescript": "~5.9.0",
+    "vite": "^8.0.0"
+  }
+}
