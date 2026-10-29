@@ -6,7 +6,19 @@
     <title>Booming Desktop</title>
   </head>
   <body>
-    <div id="app"></div>
+    <main id="app">
+      <header>
+        <h1>Booming Desktop</h1>
+        <p class="muted">M0 scaffold — playback engine probe</p>
+      </header>
+
+      <button id="check-engine" type="button">Check engine</button>
+
+      <section id="engine-result" class="result" hidden>
+        <p id="engine-summary"></p>
+        <pre id="engine-json"></pre>
+      </section>
+    </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
