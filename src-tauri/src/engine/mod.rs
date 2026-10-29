@@ -85,6 +85,11 @@ pub enum EngineError {
     #[allow(dead_code)]
     Unavailable(String),
     /// Backend-specific failure message (isolate library/OS noise here).
+    ///
+    /// Constructed by the mpv backend (cargo feature `mpv`); kept in the
+    /// shared vocabulary so the null/feature-off builds type-check against
+    /// the same error contract.
+    #[allow(dead_code)]
     Backend(String),
 }
 
