@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capability for the main window. Grants the Tauri core plugin surface; application commands (engine_probe, …) are callable without dedicated permissions.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

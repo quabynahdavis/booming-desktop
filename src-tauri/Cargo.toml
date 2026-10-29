@@ -1,0 +1,23 @@
+[package]
+name = "booming-desktop"
+version = "0.1.0"
+description = "Booming Desktop — offline music player"
+edition = "2021"
+rust-version = "1.96"
+readme = "../README.md"
+
+[lib]
+name = "booming_desktop_lib"
+# `staticlib`/`cdylib` keep the crate shippable as a library host on mobile
+# targets later; `rlib` is what the desktop binary links against.
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+tauri = { version = "2.12", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+log = "0.4"
+env_logger = "0.11"
