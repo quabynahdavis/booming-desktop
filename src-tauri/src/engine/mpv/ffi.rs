@@ -55,6 +55,11 @@ pub struct MpvSymbols {
     /// `mpv_set_option_string` — set options pre-initialization.
     pub set_option_string: MpvSetOptionStringFn,
     /// `mpv_set_property_string` — tweak properties post-initialization.
+    ///
+    /// M0 ABI completeness: resolved eagerly with the rest of the table
+    /// even though the backend only probes today; M1's playback/event code
+    /// needs it immediately.
+    #[allow(dead_code)]
     pub set_property_string: MpvSetPropertyStringFn,
     /// `mpv_get_property_string` — read a property, `NULL` on error; the
     /// returned allocation must be released with [`MpvSymbols::free`].

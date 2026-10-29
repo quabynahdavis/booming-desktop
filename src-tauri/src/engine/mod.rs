@@ -30,6 +30,8 @@ pub struct TrackRef {
 }
 
 impl TrackRef {
+    /// M0 scaffolding note: convenience constructor for M1 callers.
+    #[allow(dead_code)]
     pub fn new(path: impl Into<PathBuf>, title: impl Into<Option<String>>) -> Self {
         Self {
             path: path.into(),
@@ -41,6 +43,9 @@ impl TrackRef {
 /// Seek intent passed to [`Engine::seek`].
 ///
 /// Values are in seconds of the current track.
+///
+/// M0 scaffolding note: consumed by `Engine::seek` callers starting in M1.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SeekStatus {
     /// Jump to an absolute position counting from track start.
@@ -74,6 +79,10 @@ pub enum EngineError {
     NotImplemented,
     /// Capable backend expected, but degraded in this process (e.g. missing
     /// runtime library): operation is impossible right now.
+    ///
+    /// M0 scaffolding note: backends still return `NotImplemented` for
+    /// playback; `Unavailable` starts flowing once M1 wires real ops.
+    #[allow(dead_code)]
     Unavailable(String),
     /// Backend-specific failure message (isolate library/OS noise here).
     Backend(String),
@@ -98,6 +107,10 @@ impl std::error::Error for EngineError {}
 ///
 /// M0 note: `probe`/`name`/`version` are fully live; `play` … `enqueue`
 /// return [`EngineError::NotImplemented`] until M1 wires the player loop.
+/// M0 scaffolding note: only `probe`/`name`/`version` are consumed today;
+/// playback methods are part of the stable contract but stay unconsumed
+/// until M1 wires the player loop (hence the container-level allow).
+#[allow(dead_code)]
 pub trait Engine: Send + Sync {
     /// Stable backend identifier (`"mpv"`, `"null"`).
     fn name(&self) -> &'static str;
@@ -158,5 +171,5 @@ pub fn mount_engine() -> SharedEngine {
     #[cfg(not(feature = "mpv"))]
     log::info!(target: "engine", "mpv feature disabled, using the null engine");
 
-    Arc::new(Mutex::new(Box::new(null::NullEngine)))
+    Arc::new(Mutex::new(Box::new(null::NullEngine::new())))
 }
