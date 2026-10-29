@@ -15,6 +15,12 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [build-dependencies]
 tauri-build = { version = "2.7", features = [] }
 
+[features]
+# Declared now so cfg(feature = "mpv") resolves cleanly; the backend module
+# itself lands with the next commit (engine facade comes first).
+mpv = []
+default = []
+
 [dependencies]
 tauri = { version = "2.12", features = [] }
 serde = { version = "1", features = ["derive"] }
