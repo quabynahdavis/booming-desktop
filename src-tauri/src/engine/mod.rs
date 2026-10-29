@@ -12,6 +12,9 @@
 
 pub mod null;
 
+#[cfg(feature = "mpv")]
+pub mod mpv;
+
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
@@ -129,8 +132,31 @@ pub type SharedEngine = Arc<Mutex<Box<dyn Engine>>>;
 
 /// Select the strongest engine available on this machine.
 ///
-/// M0: falls back to [`null::NullEngine`] (the mpv branch lands with the
-/// `MpvEngine` backend in the next commit).
+/// The mpv backend (feature `mpv`, default-on) is tried first; when its
+/// runtime library cannot be found/loaded the null engine takes over and
+/// the reason is logged. This must never panic — a machine without mpv is
+/// a supported configuration, an engine-less one.
 pub fn mount_engine() -> SharedEngine {
+    #[cfg(feature = "mpv")]
+    match mpv::MpvEngine::mount() {
+        Ok(engine) => {
+            log::info!(
+                target: "engine",
+                "mounted mpv backend ({})",
+                engine.version().unwrap_or_else(|| "unknown version".into())
+            );
+            return Arc::new(Mutex::new(Box::new(engine)));
+        }
+        Err(reason) => {
+            log::warn!(
+                target: "engine",
+                "libmpv unavailable, falling back to the null engine: {reason}"
+            );
+        }
+    }
+
+    #[cfg(not(feature = "mpv"))]
+    log::info!(target: "engine", "mpv feature disabled, using the null engine");
+
     Arc::new(Mutex::new(Box::new(null::NullEngine)))
 }

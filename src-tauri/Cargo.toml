@@ -16,10 +16,11 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.7", features = [] }
 
 [features]
-# Declared now so cfg(feature = "mpv") resolves cleanly; the backend module
-# itself lands with the next commit (engine facade comes first).
-mpv = []
-default = []
+# mpv backend: discovers libmpv via dlopen at runtime (BOOMING_MPV_LIBRARY
+# env override + well-known sonames). Disabling the feature compiles the
+# facade with only the null engine -- no dlopen code at all.
+mpv = ["dep:libloading"]
+default = ["mpv"]
 
 [dependencies]
 tauri = { version = "2.12", features = [] }
@@ -27,3 +28,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 log = "0.4"
 env_logger = "0.11"
+# Runtime dynamic-loading support for the mpv backend. Optional on PURPOSE:
+# nothing in this project may link against libmpv at build time.
+libloading = { version = "0.9", optional = true }
