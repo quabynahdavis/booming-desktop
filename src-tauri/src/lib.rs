@@ -23,7 +23,12 @@ pub fn run() {
 
     tauri::Builder::default()
         .manage(engine)
-        .invoke_handler(tauri::generate_handler![commands::engine_probe])
+        .invoke_handler(tauri::generate_handler![
+            commands::engine_probe,
+            commands::scan_start,
+            commands::scan_cancel,
+            commands::scan_status
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
