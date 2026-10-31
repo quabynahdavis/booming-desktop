@@ -31,3 +31,8 @@ env_logger = "0.11"
 # Runtime dynamic-loading support for the mpv backend. Optional on PURPOSE:
 # nothing in this project may link against libmpv at build time.
 libloading = { version = "0.9", optional = true }
+lofty = "0.25"
+rusqlite = { version = "0.31", features = ["bundled"] }
+walkdir = "2"
+rayon = "1.11"
+
