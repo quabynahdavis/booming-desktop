@@ -10,8 +10,11 @@
 mod commands;
 mod engine;
 mod library;
+mod playback;
 
+use std::sync::Arc;
 use engine::SharedEngine;
+use playback::PlaybackService;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -20,15 +23,32 @@ pub fn run() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     let engine: SharedEngine = engine::mount_engine();
+    let playback_service = Arc::new(PlaybackService::new(engine.clone()));
 
     tauri::Builder::default()
         .manage(engine)
+        .manage(playback_service)
         .invoke_handler(tauri::generate_handler![
             commands::engine_probe,
             commands::scan_start,
             commands::scan_cancel,
-            commands::scan_status
+            commands::scan_status,
+            commands::play_song,
+            commands::pause_playback,
+            commands::resume_playback,
+            commands::seek_playback,
+            commands::next_track,
+            commands::previous_track,
+            commands::get_playback_state
         ])
+        .setup(|app| {
+            // set app handle for events
+            let handle = app.handle().clone();
+            if let Some(ps) = app.state::<Arc<PlaybackService>>().as_ref() {
+                ps.set_app_handle(handle);
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

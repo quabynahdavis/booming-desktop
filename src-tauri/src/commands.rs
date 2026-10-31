@@ -6,10 +6,13 @@
 
 use tauri::State;
 use tauri::AppHandle;
+use tauri::Manager;
+use std::sync::Arc;
 
 use crate::engine::{EngineStatus, SharedEngine};
 use crate::library::db::Db;
 use crate::library::scan::Scanner;
+use crate::playback::{PlaybackService, PlaybackStateInfo};
 use std::path::PathBuf;
 
 /// Probe the mounted playback engine.
@@ -48,4 +51,49 @@ pub(crate) async fn scan_cancel(_id: String) -> Result<(), String> {
 #[tauri::command]
 pub(crate) async fn scan_status(_id: String) -> Result<String, String> {
     Ok("idle".to_string())
+}
+
+fn get_db(app: &AppHandle) -> Result<Db, String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let db_path = app_data_dir.join("booming.db");
+    Db::open(db_path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn play_song(app: AppHandle, playback: State<'_, Arc<PlaybackService>>, song_id: i64) -> Result<(), String> {
+    let db = get_db(&app)?;
+    playback.play_song(&db, song_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn pause_playback(playback: State<'_, Arc<PlaybackService>>) -> Result<(), String> {
+    playback.pause().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn resume_playback(playback: State<'_, Arc<PlaybackService>>) -> Result<(), String> {
+    playback.resume().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn seek_playback(playback: State<'_, Arc<PlaybackService>>, secs: f64) -> Result<(), String> {
+    playback.seek(secs).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn next_track(app: AppHandle, playback: State<'_, Arc<PlaybackService>>) -> Result<(), String> {
+    let db = get_db(&app)?;
+    playback.next(&db).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn previous_track(app: AppHandle, playback: State<'_, Arc<PlaybackService>>) -> Result<(), String> {
+    let db = get_db(&app)?;
+    playback.previous(&db).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn get_playback_state(app: AppHandle, playback: State<'_, Arc<PlaybackService>>) -> Result<PlaybackStateInfo, String> {
+    let db = get_db(&app)?;
+    Ok(playback.get_state(&db))
 }

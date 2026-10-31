@@ -24,15 +24,16 @@ pub mod error;
 
 mod ffi;
 
-use std::ffi::CStr;
-use std::path::Path;
+use std::ffi::{CStr, CString};
+use std::sync::Mutex;
 
-use super::{Engine, EngineError, EngineStatus, SeekStatus, TrackRef};
+use super::{Engine, EngineError, EngineStatus, PlaybackState};
 pub use error::MpvBackendError;
 
 /// libmpv-backed engine (cargo feature `mpv`).
 pub struct MpvEngine {
     symbols: ffi::MpvSymbols,
+    handle: Mutex<Option<ffi::MpvHandle>>,
 }
 
 impl MpvEngine {
@@ -42,12 +43,66 @@ impl MpvEngine {
     /// to log/repeat, never a panic.
     pub fn mount() -> Result<Self, &'static MpvBackendError> {
         let symbols = ffi::symbols()?;
-        Ok(Self { symbols })
+        Ok(Self {
+            symbols,
+            handle: Mutex::new(None),
+        })
     }
 
     /// Numeric mpv client API version (no handle needed), e.g. `0x030000`.
     pub fn client_api_version(&self) -> Option<u32> {
         Some(unsafe { (self.symbols.client_api_version)() })
+    }
+
+    fn ensure_handle(&self) -> Result<ffi::MpvHandle, MpvBackendError> {
+        let mut guard = self.handle.lock().expect("handle mutex poisoned");
+        if let Some(h) = guard.as_mut() {
+            return Ok(*h);
+        }
+        // create new handle
+        let handle = unsafe { (self.symbols.create)() };
+        if handle.is_null() {
+            return Err(MpvBackendError::Internal { what: "mpv_create returned NULL" });
+        }
+        // set vo=null before init
+        let rc = unsafe {
+            (self.symbols.set_option_string)(handle, std::ffi::CStr::from_bytes_with_nul(b"vo\0").unwrap().as_ptr(), std::ffi::CStr::from_bytes_with_nul(b"null\0").unwrap().as_ptr())
+        };
+        if rc < 0 {
+            return Err(MpvBackendError::Api { what: "mpv_set_option_string(vo=null)", code: rc });
+        }
+        let rc = unsafe { (self.symbols.initialize)(handle) };
+        if rc < 0 {
+            return Err(MpvBackendError::Api { what: "mpv_initialize", code: rc });
+        }
+        *guard = Some(handle);
+        Ok(handle)
+    }
+
+    fn mpv_command(&self, args: &[&str]) -> Result<(), MpvBackendError> {
+        let handle = self.ensure_handle()?;
+        // build C string array
+        let cstrings: Vec<CString> = args.iter().map(|s| CString::new(*s).map_err(|_| MpvBackendError::Internal { what: "CString NUL" })).collect::<Result<_, _>>()?;
+        let ptrs: Vec<*const std::ffi::c_char> = cstrings.iter().map(|s| s.as_ptr()).collect();
+        let mut ptrs_with_null = ptrs;
+        ptrs_with_null.push(std::ptr::null());
+        let rc = unsafe { (self.symbols.command)(handle, ptrs_with_null.as_ptr()) };
+        if rc < 0 {
+            return Err(MpvBackendError::Api { what: "mpv_command", code: rc });
+        }
+        Ok(())
+    }
+
+    fn get_property_string(&self, name: &str) -> Result<String, MpvBackendError> {
+        let handle = self.ensure_handle()?;
+        let cname = CString::new(name).map_err(|_| MpvBackendError::Internal { what: "CString NUL" })?;
+        let raw = unsafe { (self.symbols.get_property_string)(handle, cname.as_ptr()) };
+        if raw.is_null() {
+            return Err(MpvBackendError::Internal { what: "property not found" });
+        }
+        let s = unsafe { CStr::from_ptr(raw) }.to_string_lossy().into_owned();
+        unsafe { (self.symbols.free)(raw as *mut std::ffi::c_void) };
+        Ok(s)
     }
 
     /// Run `body` against a pre-initialized, video-less mpv handle.
@@ -138,15 +193,11 @@ impl Engine for MpvEngine {
     }
 
     fn version(&self) -> Option<String> {
-        // Cheap, no-handle identity: numeric client API version. The human
-        // "mpv x.y.z" string needs a live handle and belongs to `probe`.
         let raw = self.client_api_version()?;
         Some(format!("libmpv client API {raw:#010x}"))
     }
 
     fn probe(&self) -> EngineStatus {
-        // M0 probe: create/initialize a temporary vo=null handle and read
-        // `mpv-version`. No event loop, no playback — just ABI reality.
         match self.query_version() {
             Ok(version) => EngineStatus {
                 engine: self.name().to_string(),
@@ -163,31 +214,73 @@ impl Engine for MpvEngine {
         }
     }
 
-    fn play(&self, path: &Path) -> Result<(), EngineError> {
-        let _ = path;
-        Err(EngineError::NotImplemented)
+    fn load(&self, url: &str) -> Result<(), EngineError> {
+        self.mpv_command(&["loadfile", url])?;
+        Ok(())
+    }
+
+    fn play(&self) -> Result<(), EngineError> {
+        self.mpv_command(&["play"])?;
+        Ok(())
     }
 
     fn pause(&self) -> Result<(), EngineError> {
-        Err(EngineError::NotImplemented)
+        self.mpv_command(&["pause"])?;
+        Ok(())
     }
 
-    fn resume(&self) -> Result<(), EngineError> {
-        Err(EngineError::NotImplemented)
+    fn seek(&self, pos_secs: f64) -> Result<(), EngineError> {
+        let pos = pos_secs.to_string();
+        self.mpv_command(&["seek", &pos, "absolute"])?;
+        Ok(())
     }
 
-    fn stop(&self) -> Result<(), EngineError> {
-        Err(EngineError::NotImplemented)
+    fn get_position(&self) -> Result<f64, EngineError> {
+        let s = self.get_property_string("time-pos")?;
+        s.parse::<f64>().map_err(|_| EngineError::Backend("invalid time-pos".into()))
     }
 
-    fn seek(&self, status: SeekStatus) -> Result<(), EngineError> {
-        let _ = status;
-        Err(EngineError::NotImplemented)
+    fn get_duration(&self) -> Result<f64, EngineError> {
+        let s = self.get_property_string("duration")?;
+        s.parse::<f64>().map_err(|_| EngineError::Backend("invalid duration".into()))
     }
 
-    fn enqueue(&self, track: TrackRef) -> Result<(), EngineError> {
-        let _ = track;
-        Err(EngineError::NotImplemented)
+    fn get_state(&self) -> Result<PlaybackState, EngineError> {
+        let pause_str = self.get_property_string("pause").unwrap_or_else(|_| "1".to_string());
+        let paused = pause_str == "1" || pause_str.eq_ignore_ascii_case("true");
+        if paused {
+            Ok(PlaybackState::Paused)
+        } else {
+            // check if playing
+            let pos = self.get_position().unwrap_or(0.0);
+            if pos > 0.0 {
+                Ok(PlaybackState::Playing)
+            } else {
+                Ok(PlaybackState::Stopped)
+            }
+        }
+    }
+
+    fn next(&self) -> Result<(), EngineError> {
+        self.mpv_command(&["playlist-next"])?;
+        Ok(())
+    }
+
+    fn previous(&self) -> Result<(), EngineError> {
+        self.mpv_command(&["playlist-prev"])?;
+        Ok(())
+    }
+
+    fn set_replay_gain_db(&self, gain: f64) -> Result<(), EngineError> {
+        // Use set_property_string for replaygain-track-gain
+        let handle = self.ensure_handle()?;
+        let name = CString::new("replaygain-track-gain").unwrap();
+        let val = CString::new(gain.to_string()).unwrap();
+        let rc = unsafe { (self.symbols.set_property_string)(handle, name.as_ptr(), val.as_ptr()) };
+        if rc < 0 {
+            return Err(EngineError::Backend("set replay gain failed".into()));
+        }
+        Ok(())
     }
 }
 

@@ -1,0 +1,195 @@
+use std::sync::{Arc, Mutex};
+use tauri::Emitter;
+use tauri::AppHandle;
+
+use crate::engine::{Engine, EngineError, PlaybackState, SharedEngine};
+use crate::library::db::Db;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RepeatMode {
+    None,
+    One,
+    All,
+}
+
+pub struct PlaybackService {
+    engine: SharedEngine,
+    current_song_id: Mutex<Option<i64>>,
+    queue: Mutex<Vec<i64>>,
+    repeat: Mutex<RepeatMode>,
+    shuffle: Mutex<bool>,
+    last_played_ids: Mutex<Vec<i64>>,
+    app_handle: Mutex<Option<AppHandle>>,
+}
+
+impl PlaybackService {
+    pub fn new(engine: SharedEngine) -> Self {
+        Self {
+            engine,
+            current_song_id: Mutex::new(None),
+            queue: Mutex::new(Vec::new()),
+            repeat: Mutex::new(RepeatMode::None),
+            shuffle: Mutex::new(false),
+            last_played_ids: Mutex::new(Vec::new()),
+            app_handle: Mutex::new(None),
+        }
+    }
+
+    pub fn set_app_handle(&self, handle: AppHandle) {
+        *self.app_handle.lock().unwrap() = Some(handle);
+    }
+
+    fn emit_state(&self) {
+        if let Some(handle) = self.app_handle.lock().unwrap().as_ref() {
+            let _ = handle.emit("playback-state-changed", ());
+        }
+    }
+
+    pub fn play_song(&self, db: &Db, song_id: i64) -> Result<(), EngineError> {
+        let song = db.get_song(song_id)?.ok_or_else(|| EngineError::Backend("song not found".into()))?;
+        let path = song.path;
+        {
+            let mut cur = self.current_song_id.lock().unwrap();
+            *cur = Some(song_id);
+        }
+        db.increment_play_count(song_id).ok();
+        db.update_last_played(song_id).ok();
+        // load and play
+        let engine = self.engine.lock().unwrap();
+        engine.load(&path)?;
+        engine.play()?;
+        self.emit_state();
+        Ok(())
+    }
+
+    pub fn pause(&self) -> Result<(), EngineError> {
+        let engine = self.engine.lock().unwrap();
+        engine.pause()?;
+        self.emit_state();
+        Ok(())
+    }
+
+    pub fn resume(&self) -> Result<(), EngineError> {
+        let engine = self.engine.lock().unwrap();
+        engine.play()?;
+        self.emit_state();
+        Ok(())
+    }
+
+    pub fn seek(&self, secs: f64) -> Result<(), EngineError> {
+        let engine = self.engine.lock().unwrap();
+        engine.seek(secs)?;
+        self.emit_state();
+        Ok(())
+    }
+
+    pub fn next(&self, db: &Db) -> Result<(), EngineError> {
+        let mut queue = self.queue.lock().unwrap();
+        let cur_id = *self.current_song_id.lock().unwrap();
+        let next_id = self.pick_next(&mut queue, cur_id)?;
+        if let Some(id) = next_id {
+            drop(queue);
+            self.play_song(db, id)?;
+        }
+        Ok(())
+    }
+
+    pub fn previous(&self, db: &Db) -> Result<(), EngineError> {
+        let mut queue = self.queue.lock().unwrap();
+        let cur_id = *self.current_song_id.lock().unwrap();
+        let prev_id = self.pick_previous(&mut queue, cur_id)?;
+        if let Some(id) = prev_id {
+            drop(queue);
+            self.play_song(db, id)?;
+        }
+        Ok(())
+    }
+
+    fn pick_next(&self, queue: &mut Vec<i64>, cur_id: Option<i64>) -> Result<Option<i64>, EngineError> {
+        let shuffle = *self.shuffle.lock().unwrap();
+        let repeat = *self.repeat.lock().unwrap();
+        if shuffle {
+            // simplified shuffle with ban list
+            let mut last = self.last_played_ids.lock().unwrap();
+            // build candidate list
+            let mut candidates: Vec<i64> = queue.iter().cloned().collect();
+            // remove recent
+            candidates.retain(|id| !last.contains(id));
+            if candidates.is_empty() {
+                candidates = queue.clone();
+            }
+            if !candidates.is_empty() {
+                // simple deterministic pick: first candidate
+                let chosen = candidates[0];
+                last.push(chosen);
+                if last.len() > 3 {
+                    last.remove(0);
+                }
+                return Ok(Some(chosen));
+            }
+        }
+        // sequential
+        if let Some(pos) = queue.iter().position(|&id| Some(id) == cur_id) {
+            let next_pos = pos + 1;
+            if next_pos < queue.len() {
+                return Ok(Some(queue[next_pos]));
+            } else if matches!(repeat, RepeatMode::All) {
+                return Ok(Some(queue[0]));
+            }
+        }
+        Ok(None)
+    }
+
+    fn pick_previous(&self, queue: &mut Vec<i64>, cur_id: Option<i64>) -> Result<Option<i64>, EngineError> {
+        if let Some(pos) = queue.iter().position(|&id| Some(id) == cur_id) {
+            if pos > 0 {
+                return Ok(Some(queue[pos - 1]));
+            }
+        }
+        Ok(None)
+    }
+
+    pub fn get_state(&self, db: &Db) -> PlaybackStateInfo {
+        let engine = self.engine.lock().unwrap();
+        let state = engine.get_state().unwrap_or(PlaybackState::Stopped);
+        let position = engine.get_position().unwrap_or(0.0);
+        let duration = engine.get_duration().unwrap_or(0.0);
+        let current_song_id = *self.current_song_id.lock().unwrap();
+        let queue = self.queue.lock().unwrap().clone();
+        let current_song = current_song_id.and_then(|id| db.get_song(id).ok().flatten());
+        PlaybackStateInfo {
+            state,
+            position,
+            duration,
+            current_song_id,
+            current_song,
+            queue,
+        }
+    }
+
+    pub fn set_queue(&self, queue: Vec<i64>) {
+        *self.queue.lock().unwrap() = queue;
+    }
+
+    pub fn get_queue(&self) -> Vec<i64> {
+        self.queue.lock().unwrap().clone()
+    }
+
+    pub fn set_repeat(&self, mode: RepeatMode) {
+        *self.repeat.lock().unwrap() = mode;
+    }
+
+    pub fn set_shuffle(&self, shuffle: bool) {
+        *self.shuffle.lock().unwrap() = shuffle;
+    }
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct PlaybackStateInfo {
+    pub state: PlaybackState,
+    pub position: f64,
+    pub duration: f64,
+    pub current_song_id: Option<i64>,
+    pub current_song: Option<crate::library::db::Song>,
+    pub queue: Vec<i64>,
+}

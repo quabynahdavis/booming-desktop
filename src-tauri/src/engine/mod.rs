@@ -56,6 +56,15 @@ pub enum SeekStatus {
     Relative(f64),
 }
 
+/// Playback state returned by [`Engine::get_state`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PlaybackState {
+    Playing,
+    Paused,
+    Stopped,
+}
+
 /// Health/identity snapshot returned by [`Engine::probe`].
 ///
 /// Shaped to match the `engine_probe:` IPC payload contract exactly.
@@ -128,23 +137,35 @@ pub trait Engine: Send + Sync {
     /// Human-readable version string if the backend can produce one.
     fn version(&self) -> Option<String>;
 
-    /// Start playing the audio at `path`, replacing anything playing.
-    fn play(&self, path: &Path) -> Result<(), EngineError>;
+    /// Load a track URL into the engine without starting playback.
+    fn load(&self, url: &str) -> Result<(), EngineError>;
+
+    /// Start/Resume playback of the loaded track.
+    fn play(&self) -> Result<(), EngineError>;
 
     /// Pause the current playback.
     fn pause(&self) -> Result<(), EngineError>;
 
-    /// Resume the current playback after [`Engine::pause`].
-    fn resume(&self) -> Result<(), EngineError>;
+    /// Seek to an absolute position in seconds.
+    fn seek(&self, pos_secs: f64) -> Result<(), EngineError>;
 
-    /// Stop the current playback and discard its state.
-    fn stop(&self) -> Result<(), EngineError>;
+    /// Current playback position in seconds.
+    fn get_position(&self) -> Result<f64, EngineError>;
 
-    /// Seek inside the current track.
-    fn seek(&self, status: SeekStatus) -> Result<(), EngineError>;
+    /// Total duration of current track in seconds.
+    fn get_duration(&self) -> Result<f64, EngineError>;
 
-    /// Append a track to the playback queue without starting it.
-    fn enqueue(&self, track: TrackRef) -> Result<(), EngineError>;
+    /// Current playback state.
+    fn get_state(&self) -> Result<PlaybackState, EngineError>;
+
+    /// Skip to next track in queue.
+    fn next(&self) -> Result<(), EngineError>;
+
+    /// Go to previous track in queue.
+    fn previous(&self) -> Result<(), EngineError>;
+
+    /// Set replay gain in dB.
+    fn set_replay_gain_db(&self, gain: f64) -> Result<(), EngineError>;
 }
 
 /// Engine instance shared through Tauri's managed state.

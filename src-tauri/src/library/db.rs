@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use rusqlite::{params, Connection, Result as SqlResult};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct Song {
     pub id: i64,
     pub path: String,
@@ -69,6 +69,11 @@ impl Db {
                  song_id INTEGER NOT NULL,
                  position INTEGER NOT NULL,
                  PRIMARY KEY (playlist_id, song_id)
+             );
+             CREATE TABLE IF NOT EXISTS queue_state (
+                 id INTEGER PRIMARY KEY,
+                 song_id INTEGER,
+                 position INTEGER
              );
              CREATE INDEX IF NOT EXISTS idx_songs_artist ON songs(artist);
              CREATE INDEX IF NOT EXISTS idx_songs_album ON songs(album);

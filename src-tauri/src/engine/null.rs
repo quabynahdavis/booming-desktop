@@ -4,9 +4,7 @@
 //! command is a no-op returning [`EngineError::NotImplemented`] so the UI can
 //! distinguish "scaffolded" from "attempted and failed".
 
-use std::path::Path;
-
-use super::{Engine, EngineError, EngineStatus, SeekStatus, TrackRef};
+use super::{Engine, EngineError, EngineStatus, PlaybackState};
 
 /// Backend that accepts every command and plays nothing.
 #[derive(Debug, Clone, Copy, Default)]
@@ -30,15 +28,17 @@ impl Engine for NullEngine {
     fn probe(&self) -> EngineStatus {
         EngineStatus {
             engine: self.name().to_string(),
-            // No audio capability by design, hence `loaded: false`.
             loaded: false,
             version: None,
             error: None,
         }
     }
 
-    fn play(&self, path: &Path) -> Result<(), EngineError> {
-        let _ = path;
+    fn load(&self, _url: &str) -> Result<(), EngineError> {
+        Err(EngineError::NotImplemented)
+    }
+
+    fn play(&self) -> Result<(), EngineError> {
         Err(EngineError::NotImplemented)
     }
 
@@ -46,21 +46,31 @@ impl Engine for NullEngine {
         Err(EngineError::NotImplemented)
     }
 
-    fn resume(&self) -> Result<(), EngineError> {
+    fn seek(&self, _pos_secs: f64) -> Result<(), EngineError> {
         Err(EngineError::NotImplemented)
     }
 
-    fn stop(&self) -> Result<(), EngineError> {
+    fn get_position(&self) -> Result<f64, EngineError> {
         Err(EngineError::NotImplemented)
     }
 
-    fn seek(&self, status: SeekStatus) -> Result<(), EngineError> {
-        let _ = status;
+    fn get_duration(&self) -> Result<f64, EngineError> {
         Err(EngineError::NotImplemented)
     }
 
-    fn enqueue(&self, track: TrackRef) -> Result<(), EngineError> {
-        let _ = track;
+    fn get_state(&self) -> Result<PlaybackState, EngineError> {
+        Err(EngineError::NotImplemented)
+    }
+
+    fn next(&self) -> Result<(), EngineError> {
+        Err(EngineError::NotImplemented)
+    }
+
+    fn previous(&self) -> Result<(), EngineError> {
+        Err(EngineError::NotImplemented)
+    }
+
+    fn set_replay_gain_db(&self, _gain: f64) -> Result<(), EngineError> {
         Err(EngineError::NotImplemented)
     }
 }

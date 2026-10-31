@@ -41,6 +41,7 @@ type MpvGetPropertyStringFn = unsafe extern "C" fn(MpvHandle, *const c_char) -> 
 type MpvFreeFn = unsafe extern "C" fn(*mut c_void);
 type MpvTerminateDestroyFn = unsafe extern "C" fn(MpvHandle);
 type MpvClientApiVersionFn = unsafe extern "C" fn() -> c_uint;
+type MpvCommandFn = unsafe extern "C" fn(MpvHandle, *const *const c_char) -> c_int;
 
 /// Copyable table of resolved ABI entry points.
 ///
@@ -70,6 +71,8 @@ pub struct MpvSymbols {
     pub terminate_destroy: MpvTerminateDestroyFn,
     /// `mpv_client_api_version` — no handle needed.
     pub client_api_version: MpvClientApiVersionFn,
+    /// `mpv_command` — send a command to mpv.
+    pub command: MpvCommandFn,
 }
 
 /// Environment variable that points at a specific libmpv file to try first
@@ -121,6 +124,7 @@ fn discover() -> Result<MpvSymbols, MpvBackendError> {
             free: resolve(library, b"mpv_free\0")?,
             terminate_destroy: resolve(library, b"mpv_terminate_destroy\0")?,
             client_api_version: resolve(library, b"mpv_client_api_version\0")?,
+            command: resolve(library, b"mpv_command\0")?,
         })
     }
 }
