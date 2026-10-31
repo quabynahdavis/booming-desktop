@@ -4,6 +4,12 @@
 // webview; plain-browser dev (vite alone) fails gracefully below.
 import { invoke } from "@tauri-apps/api/core";
 import "./styles.css";
+import '@material/web/button/filled-tonal-button.js';
+import { styles as typescaleStyles } from '@material/web/typography/md-typescale-styles.js';
+
+if (typeof document !== 'undefined' && typescaleStyles?.styleSheet) {
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, typescaleStyles.styleSheet];
+}
 
 interface EngineStatus {
   engine: "mpv" | "null";
@@ -12,7 +18,7 @@ interface EngineStatus {
   error: string | null;
 }
 
-const button = document.querySelector<HTMLButtonElement>("#check-engine");
+const button = document.querySelector<HTMLElement>("#check-engine");
 const resultPanel = document.querySelector<HTMLElement>("#engine-result");
 const summary = document.querySelector<HTMLParagraphElement>("#engine-summary");
 const output = document.querySelector<HTMLPreElement>("#engine-json");
@@ -22,7 +28,7 @@ if (!button || !resultPanel || !summary || !output) {
 }
 
 button.addEventListener("click", async () => {
-  button.disabled = true;
+  button.setAttribute("disabled", "");
   summary.className = "";
   summary.textContent = "Probing playback engine…";
   resultPanel.hidden = false;
@@ -48,6 +54,6 @@ button.addEventListener("click", async () => {
     summary.textContent = "engine_probe failed — running outside Tauri?";
     output.textContent = JSON.stringify({ error: String(error) }, null, 2);
   } finally {
-    button.disabled = false;
+    button.removeAttribute("disabled");
   }
 });
