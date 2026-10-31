@@ -15,6 +15,8 @@ pub mod null;
 #[cfg(feature = "mpv")]
 pub mod mpv;
 
+pub mod locator;
+
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
@@ -195,20 +197,30 @@ mod tests {
 /// a supported configuration, an engine-less one.
 pub fn mount_engine() -> SharedEngine {
     #[cfg(feature = "mpv")]
-    match mpv::MpvEngine::mount() {
-        Ok(engine) => {
-            log::info!(
-                target: "engine",
-                "mounted mpv backend ({})",
-                engine.version().unwrap_or_else(|| "unknown version".into())
-            );
-            return Arc::new(Mutex::new(Box::new(engine)));
-        }
-        Err(reason) => {
-            log::warn!(
-                target: "engine",
-                "libmpv unavailable, falling back to the null engine: {reason}"
-            );
+    {
+        let spec = locator::EngineLocator::discover();
+        if spec.engine == "mpv" {
+            if let Some(lib_path) = &spec.lib_path {
+                log::info!(target: "engine", "libmpv discovered at {}", lib_path.display());
+            }
+            match mpv::MpvEngine::mount() {
+                Ok(engine) => {
+                    log::info!(
+                        target: "engine",
+                        "mounted mpv backend ({})",
+                        engine.version().unwrap_or_else(|| "unknown version".into())
+                    );
+                    return Arc::new(Mutex::new(Box::new(engine)));
+                }
+                Err(reason) => {
+                    log::warn!(
+                        target: "engine",
+                        "libmpv unavailable, falling back to the null engine: {reason}"
+                    );
+                }
+            }
+        } else if let Some(err) = spec.error {
+            log::warn!(target: "engine", "engine locator: {err}");
         }
     }
 
