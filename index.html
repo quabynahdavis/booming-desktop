@@ -7,21 +7,38 @@
   </head>
   <body>
     <main id="app">
-      <md-top-app-bar>
-        <div slot="title">Booming</div>
-        <md-icon-button id="add-folder" slot="trailing-actions" title="Add folder">
-          <md-icon>folder_plus</md-icon>
-        </md-icon-button>
-      </md-top-app-bar>
+      <header style="display:flex;align-items:center;justify-content:space-between;padding:16px">
+        <h1 style="margin:0;font-size:20px">Booming</h1>
+        <button id="add-folder">Add folder</button>
+      </header>
       <div style="padding:16px">
-        <md-text-field label="Search" style="width:100%"></md-text-field>
-        <md-list id="song-list" style="margin-top:16px"></md-list>
+        <input id="search" placeholder="Search" style="width:100%;padding:8px;margin-bottom:16px" />
+        <div id="song-list"></div>
         <div id="empty-state" style="text-align:center;margin-top:64px">
           <p>No songs yet</p>
-          <md-filled-tonal-button id="add-folder-empty">Add music folder</md-filled-tonal-button>
+          <button>Add music folder</button>
         </div>
       </div>
     </main>
+    <div id="player-panel" class="player-panel">
+      <div class="player-handle"></div>
+      <div class="player-collapsed">
+        <img id="player-cover" alt="cover" />
+        <div class="player-meta">
+          <div id="player-title">No track</div>
+          <div id="player-artist"></div>
+        </div>
+        <div class="player-controls">
+          <button id="player-prev">⏮</button>
+          <button id="player-play">▶</button>
+          <button id="player-next">⏭</button>
+        </div>
+      </div>
+      <div class="player-expanded">
+        <div id="player-queue-list"></div>
+        <md-slider id="player-progress" min="0" max="100" value="0"></md-slider>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

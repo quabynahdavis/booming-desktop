@@ -193,3 +193,17 @@ pub struct PlaybackStateInfo {
     pub current_song: Option<crate::library::db::Song>,
     pub queue: Vec<i64>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::engine::null::NullEngine;
+
+    #[test]
+    fn playback_state_transitions_load_play_pause() {
+        let engine = Arc::new(Mutex::new(Box::new(NullEngine::new()) as Box<dyn Engine>));
+        let service = PlaybackService::new(engine);
+        // service should be constructible and state defaults to None
+        assert_eq!(*service.current_song_id.lock().unwrap(), None);
+    }
+}

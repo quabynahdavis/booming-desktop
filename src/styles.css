@@ -96,3 +96,81 @@ pre {
   overflow: auto;
   min-height: 2.6em;
 }
+
+.player-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  max-height: 90vh;
+  height: 72px;
+  overflow: hidden;
+  transition: height 0.25s cubic-bezier(0.2,0.8,0.2,1);
+  z-index: 1000;
+  pointer-events: auto;
+}
+.player-panel.expanded {
+  height: 70vh;
+}
+.player-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 8px auto;
+  cursor: grab;
+}
+.player-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+.player-collapsed img {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: #222;
+  object-fit: cover;
+}
+.player-meta {
+  flex: 1;
+  min-width: 0;
+}
+.player-meta #player-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-meta #player-artist {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-controls {
+  display: flex;
+  gap: 12px;
+}
+.player-controls button {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+}
+.player-expanded {
+  padding: 0 16px 16px;
+  overflow-y: auto;
+  height: calc(100% - 72px);
+}
+#player-progress {
+  width: 100%;
+  margin-top: 12px;
+}
+
