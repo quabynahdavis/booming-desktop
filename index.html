@@ -7,17 +7,20 @@
   </head>
   <body>
     <main id="app">
-      <header>
-        <h1>Booming Desktop</h1>
-        <p class="muted">M0 scaffold — playback engine probe</p>
-      </header>
-
-      <md-filled-tonal-button id="check-engine">Check engine</md-filled-tonal-button>
-
-      <section id="engine-result" class="result" hidden>
-        <p id="engine-summary"></p>
-        <pre id="engine-json"></pre>
-      </section>
+      <md-top-app-bar>
+        <div slot="title">Booming</div>
+        <md-icon-button id="add-folder" slot="trailing-actions" title="Add folder">
+          <md-icon>folder_plus</md-icon>
+        </md-icon-button>
+      </md-top-app-bar>
+      <div style="padding:16px">
+        <md-text-field label="Search" style="width:100%"></md-text-field>
+        <md-list id="song-list" style="margin-top:16px"></md-list>
+        <div id="empty-state" style="text-align:center;margin-top:64px">
+          <p>No songs yet</p>
+          <md-filled-tonal-button id="add-folder-empty">Add music folder</md-filled-tonal-button>
+        </div>
+      </div>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

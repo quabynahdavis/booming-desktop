@@ -1,59 +1,91 @@
-// Booming Desktop — engine probe smoke test (M0).
-//
-// `invoke` only reaches the Rust side when the page runs inside the Tauri
-// webview; plain-browser dev (vite alone) fails gracefully below.
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import "./styles.css";
+import '@material/web/top-app-bar/md-top-app-bar.js';
+import '@material/web/icon-button/md-icon-button.js';
+import '@material/web/textfield/md-text-field.js';
+import '@material/web/list/md-list.js';
+import '@material/web/list/md-list-item.js';
 import '@material/web/button/filled-tonal-button.js';
+import '@material/web/icon/md-icon.js';
 import { styles as typescaleStyles } from '@material/web/typography/md-typescale-styles.js';
 
 if (typeof document !== 'undefined' && typescaleStyles?.styleSheet) {
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, typescaleStyles.styleSheet];
 }
 
-interface EngineStatus {
-  engine: "mpv" | "null";
-  loaded: boolean;
-  version: string | null;
-  error: string | null;
+interface Song {
+  id: number;
+  title?: string;
+  artist?: string;
+  album?: string;
+  duration?: number;
+  path: string;
 }
 
-const button = document.querySelector<HTMLElement>("#check-engine");
-const resultPanel = document.querySelector<HTMLElement>("#engine-result");
-const summary = document.querySelector<HTMLParagraphElement>("#engine-summary");
-const output = document.querySelector<HTMLPreElement>("#engine-json");
+const listEl = document.querySelector<HTMLElement>('#song-list');
+const searchEl = document.querySelector<HTMLElement>('md-text-field');
+const emptyEl = document.querySelector<HTMLElement>('#empty-state');
+const addBtn = document.querySelector<HTMLElement>('#add-folder');
 
-if (!button || !resultPanel || !summary || !output) {
-  throw new Error("engine probe UI is malformed (missing DOM anchors)");
+let songs: Song[] = [];
+
+function formatDuration(sec?: number) {
+  if (!sec) return '—';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
 }
 
-button.addEventListener("click", async () => {
-  button.setAttribute("disabled", "");
-  summary.className = "";
-  summary.textContent = "Probing playback engine…";
-  resultPanel.hidden = false;
-  output.textContent = "";
-
-  try {
-    const status = await invoke<EngineStatus>("engine_probe");
-    output.textContent = JSON.stringify(status, null, 2);
-
-    if (status.engine === "mpv" && status.loaded) {
-      summary.className = "ok";
-      summary.textContent = `mpv backend ready: ${status.version ?? "unknown version"}`;
-    } else if (status.engine === "null") {
-      summary.className = "warn";
-      summary.textContent =
-        "null fallback active — libmpv is not available on this machine";
-    } else {
-      summary.className = "warn";
-      summary.textContent = "mpv backend degraded — details below";
-    }
-  } catch (error) {
-    summary.className = "err";
-    summary.textContent = "engine_probe failed — running outside Tauri?";
-    output.textContent = JSON.stringify({ error: String(error) }, null, 2);
-  } finally {
-    button.removeAttribute("disabled");
+function render() {
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  const filtered = songs.filter(s => {
+    const q = (searchEl as any)?.value?.toLowerCase() ?? '';
+    if (!q) return true;
+    return [s.title, s.artist, s.album].filter(Boolean).some(v => v!.toLowerCase().includes(q));
+  });
+  if (filtered.length === 0) {
+    if (emptyEl) emptyEl.hidden = false;
+    return;
   }
-});
+  if (emptyEl) emptyEl.hidden = true;
+  for (const s of filtered.slice(0, 200)) {
+    const item = document.createElement('md-list-item');
+    item.setAttribute('headline', s.title ?? 'Unknown');
+    item.setAttribute('supporting-text', `${s.artist ?? ''} • ${s.album ?? ''} • ${formatDuration(s.duration)}`);
+    item.addEventListener('click', () => console.log('play', s.path));
+    listEl.appendChild(item);
+  }
+}
+
+async function loadSongs() {
+  try {
+    // Stub: future IPC list_songs
+    songs = [];
+    render();
+  } catch {}
+}
+
+if (addBtn) {
+  addBtn.addEventListener('click', async () => {
+    try {
+      const dir = await open({ directory: true, multiple: false });
+      if (typeof dir === 'string') {
+        await invoke('scan_start', { root: dir });
+        // reload after scan
+        await loadSongs();
+      }
+    } catch {}
+  });
+}
+
+if (searchEl) {
+  let timer: number;
+  searchEl.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = window.setTimeout(render, 200);
+  });
+}
+
+loadSongs();
