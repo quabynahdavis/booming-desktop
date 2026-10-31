@@ -5,7 +5,7 @@ All notable changes to Booming Desktop. Dates in ISO-8601 (UTC).
 ## [0.1.0] — 2026-10-29 — M0: scaffold
 
 ### Added
-- Node/toolchain bootstrap: `package.json` (pnpm 12.15.0), Vite 8 + TypeScript
+- Node/toolchain bootstrap: `package.json` (bun 1.4.4), Vite 8 + TypeScript
   5.9 frontend scaffold, ignore rules, lockfile.
 - Tauri v2 shell (`src-tauri`): config (`tauri.conf.json`, targets
   `deb` + `appimage`, Linux-first), capabilities (`core:default`), minimal
@@ -32,7 +32,7 @@ All notable changes to Booming Desktop. Dates in ISO-8601 (UTC).
   zero warnings.
 - `cargo build` on a host **without** libmpv installed: passes — proof that
   nothing links against libmpv at build time.
-- `pnpm typecheck` and `pnpm build` (Vite 8.3.5): pass.
+- `bun run typecheck` and `bun run build` (Vite 8.3.5): pass.
 - `cargo test --lib`: 1 passed / 0 failed.
 
 ### Notes / decisions

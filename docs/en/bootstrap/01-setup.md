@@ -8,7 +8,7 @@ Everything needed to build, verify and (later) run the M0 scaffold.
 | --- | --- |
 | rustc / cargo | 1.96.1 |
 | node | 24.14.0 |
-| npm / pnpm | 11.9.0 / **12.15.0** (preferred) |
+| npm / bun | 11.9.0 / **1.4.4** (preferred) |
 | vite | 8.3.5 |
 | typescript | 5.9.3 |
 
@@ -21,7 +21,7 @@ only), `serde`/`serde_json`, `log` + `env_logger`.
 ```
 booming-desktop/
 ├── index.html, src/           # vanilla TypeScript frontend (Vite)
-├── package.json               # pnpm workspace scripts (see §4)
+├── package.json               # bun workspace scripts (see §4)
 ├── vite.config.ts             # dev port 1420 (matches tauri.conf.json)
 ├── docs/en/                   # this documentation tree
 └── src-tauri/                 # Tauri v2 Rust app
@@ -59,8 +59,8 @@ booming-desktop/
 
 ```sh
 # frontend
-pnpm install
-pnpm build                # vite build → dist/ (required by the Rust macro)
+bun install
+bun run build                # vite build → dist/ (required by the Rust macro)
 
 # backend (compile, two feature states)
 cargo check --manifest-path src-tauri/Cargo.toml                  # mpv ON
@@ -78,7 +78,7 @@ All of the above pass on the dev host (see `docs/en/CHANGELOG.md` §["Verified"]
 with concrete timestamps).
 
 Optional interactive run (`tauri dev`-style, needs a display):
-`pnpm build && (cd src-tauri && cargo run)` — this opens the desktop window;
+`bun run build && (cd src-tauri && cargo run)` — this opens the desktop window;
 the "Check engine" button is the M0 smoke test.
 
 ## 5. Runtime libmpv installation (for the user)

@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "description": "Booming Desktop — offline music player (Tauri v2 + Rust, vanilla TypeScript frontend).",
   "type": "module",
-  "packageManager": "pnpm@12.15.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
