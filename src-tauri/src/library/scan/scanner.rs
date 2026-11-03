@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 use walkdir::WalkDir;
-use rayon::prelude::*;
-use crate::library::scan::{extract_tags, TrackMeta};
+use crate::library::scan::extract_tags;
 use crate::library::db::Db;
 
 #[derive(Debug)]
@@ -33,18 +32,15 @@ impl Scanner {
             .collect();
 
         let total = files.len();
-        let mut progress = Vec::new();
         let mut scanned = 0;
 
-        files.par_iter().for_each(|path| {
-            if let Ok(meta) = extract_tags(path) {
+        for path in files {
+            if let Ok(meta) = extract_tags(&path) {
                 let _ = self.db.insert_or_update_song(&meta);
             }
-            // Note: progress events not thread-safe here; simplified
-        });
+            scanned += 1;
+        }
 
-        scanned = total;
-        progress.push(ScanProgress { scanned, total, current_path: None });
-        progress
+        vec![ScanProgress { scanned, total, current_path: None }]
     }
 }

@@ -1,9 +1,13 @@
+pub mod replaygain;
+pub use replaygain::GainMode;
+
 use std::sync::{Arc, Mutex};
 use tauri::Emitter;
 use tauri::AppHandle;
 
-use crate::engine::{Engine, EngineError, PlaybackState, SharedEngine};
+use crate::engine::{EngineError, PlaybackState, SharedEngine};
 use crate::library::db::Db;
+use crate::playback::replaygain::{ReplayGainManager};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RepeatMode {
@@ -20,6 +24,7 @@ pub struct PlaybackService {
     shuffle: Mutex<bool>,
     last_played_ids: Mutex<Vec<i64>>,
     app_handle: Mutex<Option<AppHandle>>,
+    replay_gain_mode: Mutex<GainMode>,
 }
 
 impl PlaybackService {
@@ -32,6 +37,7 @@ impl PlaybackService {
             shuffle: Mutex::new(false),
             last_played_ids: Mutex::new(Vec::new()),
             app_handle: Mutex::new(None),
+            replay_gain_mode: Mutex::new(GainMode::Off),
         }
     }
 
@@ -46,20 +52,32 @@ impl PlaybackService {
     }
 
     pub fn play_song(&self, db: &Db, song_id: i64) -> Result<(), EngineError> {
-        let song = db.get_song(song_id)?.ok_or_else(|| EngineError::Backend("song not found".into()))?;
-        let path = song.path;
+        let song = db.get_song(song_id).map_err(|e| EngineError::Backend(e.to_string()))?.ok_or_else(|| EngineError::Backend("song not found".into()))?;
+        let path = song.path.clone();
         {
             let mut cur = self.current_song_id.lock().unwrap();
             *cur = Some(song_id);
         }
         db.increment_play_count(song_id).ok();
         db.update_last_played(song_id).ok();
+
+        // Apply ReplayGain before playing
+        let mode = *self.replay_gain_mode.lock().unwrap();
+        {
+            let engine = self.engine.lock().unwrap();
+            ReplayGainManager::apply_for_track(&**engine, &song, mode)?;
+        }
+
         // load and play
         let engine = self.engine.lock().unwrap();
         engine.load(&path)?;
         engine.play()?;
         self.emit_state();
         Ok(())
+    }
+
+    pub fn set_replay_gain_mode(&self, mode: GainMode) {
+        *self.replay_gain_mode.lock().unwrap() = mode;
     }
 
     pub fn pause(&self) -> Result<(), EngineError> {
@@ -201,9 +219,10 @@ mod tests {
 
     #[test]
     fn playback_state_transitions_load_play_pause() {
-        let engine = Arc::new(Mutex::new(Box::new(NullEngine::new()) as Box<dyn Engine>));
+        let engine = Arc::new(Mutex::new(Box::new(NullEngine::new()) as Box<dyn crate::engine::Engine>));
         let service = PlaybackService::new(engine);
         // service should be constructible and state defaults to None
         assert_eq!(*service.current_song_id.lock().unwrap(), None);
+        assert_eq!(*service.replay_gain_mode.lock().unwrap(), GainMode::Off);
     }
 }
