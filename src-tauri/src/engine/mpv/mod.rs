@@ -36,6 +36,12 @@ pub struct MpvEngine {
     handle: Mutex<Option<ffi::MpvHandle>>,
 }
 
+// SAFETY: MpvHandle is *mut c_void, which is technically not Send/Sync,
+// but we manage it via a Mutex inside MpvEngine and mpv_handle is 
+// generally thread-safe for command sending.
+unsafe impl Send for MpvEngine {}
+unsafe impl Sync for MpvEngine {}
+
 impl MpvEngine {
     /// Attempt to mount the mpv backend.
     ///
@@ -54,6 +60,16 @@ impl MpvEngine {
         Some(unsafe { (self.symbols.client_api_version)() })
     }
 
+    fn set_option_string(&self, handle: ffi::MpvHandle, name: &str, value: &str) -> Result<(), MpvBackendError> {
+        let cname = CString::new(name).map_err(|_| MpvBackendError::Internal { what: "CString NUL" })?;
+        let cval = CString::new(value).map_err(|_| MpvBackendError::Internal { what: "CString NUL" })?;
+        let rc = unsafe { (self.symbols.set_option_string)(handle, cname.as_ptr(), cval.as_ptr()) };
+        if rc < 0 {
+            return Err(MpvBackendError::Api { what: "mpv_set_option_string", code: rc });
+        }
+        Ok(())
+    }
+
     fn ensure_handle(&self) -> Result<ffi::MpvHandle, MpvBackendError> {
         let mut guard = self.handle.lock().expect("handle mutex poisoned");
         if let Some(h) = guard.as_mut() {
@@ -65,12 +81,17 @@ impl MpvEngine {
             return Err(MpvBackendError::Internal { what: "mpv_create returned NULL" });
         }
         // set vo=null before init
-        let rc = unsafe {
-            (self.symbols.set_option_string)(handle, std::ffi::CStr::from_bytes_with_nul(b"vo\0").unwrap().as_ptr(), std::ffi::CStr::from_bytes_with_nul(b"null\0").unwrap().as_ptr())
-        };
-        if rc < 0 {
-            return Err(MpvBackendError::Api { what: "mpv_set_option_string(vo=null)", code: rc });
+        self.set_option_string(handle, "vo", "null")?;
+
+        // gapless audio: try yes, fall back to weak
+        if self.set_option_string(handle, "gapless-audio", "yes").is_err() {
+            let _ = self.set_option_string(handle, "gapless-audio", "weak");
         }
+        // low audio buffer to reduce pre-buffer seams (~30ms)
+        let _ = self.set_option_string(handle, "audio-buffer", "0.03");
+        // own transitions
+        let _ = self.set_option_string(handle, "playlist-repeat", "no");
+
         let rc = unsafe { (self.symbols.initialize)(handle) };
         if rc < 0 {
             return Err(MpvBackendError::Api { what: "mpv_initialize", code: rc });
@@ -279,6 +300,32 @@ impl Engine for MpvEngine {
         let rc = unsafe { (self.symbols.set_property_string)(handle, name.as_ptr(), val.as_ptr()) };
         if rc < 0 {
             return Err(EngineError::Backend("set replay gain failed".into()));
+        }
+        Ok(())
+    }
+
+    fn set_audio_filter(&self, filter: String) -> Result<(), EngineError> {
+        let handle = self.ensure_handle()?;
+        let name = CString::new("af").map_err(|_| EngineError::Backend("invalid filter name".into()))?;
+        let val = CString::new(filter).map_err(|_| EngineError::Backend("invalid filter value".into()))?;
+        let rc = unsafe { (self.symbols.set_option_string)(handle, name.as_ptr(), val.as_ptr()) };
+        if rc < 0 {
+            return Err(EngineError::Backend("set audio filter failed".into()));
+        }
+        Ok(())
+    }
+
+    fn set_gapless(&self, enabled: bool) -> Result<(), EngineError> {
+        let handle = self.ensure_handle()?;
+        let val = if enabled { "yes" } else { "no" };
+        // mpv options generally immutable after init; best-effort attempt
+        let name = CString::new("gapless-audio").map_err(|_| EngineError::Backend("invalid option".into()))?;
+        let cval = CString::new(val).map_err(|_| EngineError::Backend("invalid value".into()))?;
+        let rc = unsafe { (self.symbols.set_option_string)(handle, name.as_ptr(), cval.as_ptr()) };
+        if rc < 0 {
+            // log and degrade gracefully
+            log::warn!("mpv set_gapless failed (handle already init), rc={rc}");
+            return Ok(());
         }
         Ok(())
     }

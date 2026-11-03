@@ -15,6 +15,7 @@ mod playback;
 use std::sync::Arc;
 use engine::SharedEngine;
 use playback::PlaybackService;
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -39,12 +40,13 @@ pub fn run() {
             commands::seek_playback,
             commands::next_track,
             commands::previous_track,
-            commands::get_playback_state
+            commands::get_playback_state,
+            commands::set_replay_gain_mode
         ])
         .setup(|app| {
             // set app handle for events
             let handle = app.handle().clone();
-            if let Some(ps) = app.state::<Arc<PlaybackService>>().as_ref() {
+            if let Some(ps) = app.try_state::<Arc<PlaybackService>>() {
                 ps.set_app_handle(handle);
             }
             Ok(())

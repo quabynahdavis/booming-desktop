@@ -166,6 +166,12 @@ pub trait Engine: Send + Sync {
 
     /// Set replay gain in dB.
     fn set_replay_gain_db(&self, gain: f64) -> Result<(), EngineError>;
+
+    /// Set audio filter chain (mpv `-af` option).
+    fn set_audio_filter(&self, filter: String) -> Result<(), EngineError>;
+
+    /// Enable/disable gapless playback (mpv `--gapless-audio`).
+    fn set_gapless(&self, enabled: bool) -> Result<(), EngineError>;
 }
 
 /// Engine instance shared through Tauri's managed state.

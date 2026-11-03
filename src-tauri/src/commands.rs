@@ -12,7 +12,13 @@ use std::sync::Arc;
 use crate::engine::{EngineStatus, SharedEngine};
 use crate::library::db::Db;
 use crate::library::scan::Scanner;
-use crate::playback::{PlaybackService, PlaybackStateInfo};
+use crate::playback::{PlaybackService, PlaybackStateInfo, GainMode};
+
+#[tauri::command]
+pub(crate) async fn set_replay_gain_mode(playback: State<'_, Arc<PlaybackService>>, mode: GainMode) -> Result<(), String> {
+    playback.set_replay_gain_mode(mode);
+    Ok(())
+}
 use std::path::PathBuf;
 
 /// Probe the mounted playback engine.

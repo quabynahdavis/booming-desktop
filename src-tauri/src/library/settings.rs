@@ -6,6 +6,8 @@ use std::fs;
 pub struct Settings {
     pub library_folders: Vec<String>,
     pub theme: String,
+    pub replay_gain_mode: String,
+    pub audio_filter: String,
 }
 
 impl Settings {
@@ -20,6 +22,8 @@ impl Settings {
         Settings {
             library_folders: vec![],
             theme: "system".to_string(),
+            replay_gain_mode: "off".to_string(),
+            audio_filter: "".to_string(),
         }
     }
 

@@ -73,4 +73,12 @@ impl Engine for NullEngine {
     fn set_replay_gain_db(&self, _gain: f64) -> Result<(), EngineError> {
         Err(EngineError::NotImplemented)
     }
+
+    fn set_audio_filter(&self, _filter: String) -> Result<(), EngineError> {
+        Err(EngineError::NotImplemented)
+    }
+
+    fn set_gapless(&self, _enabled: bool) -> Result<(), EngineError> {
+        Err(EngineError::NotImplemented)
+    }
 }
