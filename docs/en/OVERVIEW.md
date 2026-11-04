@@ -9,16 +9,21 @@ links without mpv installed.
 
 | File | Scope |
 | --- | --- |
-| [`bootstrap/01-setup.md`](bootstrap/01-setup.md) | Toolchain, repo layout, M0 verification matrix, libmpv runtime install |
+| [`architecture/01-overview.md`](architecture/01-overview.md) | High-level architecture: Tauri shell, Rust backend modules, IPC surface, frontend, Android feature parity mapping, ASCII Module → IPC → Frontend diagram |
+| [`bootstrap/01-setup.md`](bootstrap/01-setup.md) | Dev toolchain, verification matrix, runtime libmpv install, bun + Material 3 |
+| [`library/01-scan.md`](library/01-scan.md) | Folder scan → lofty tags → SQLite (`rusqlite`), schema, scanner, `TrackMeta` quick reference, ReplayGain, cover cache, playlist API |
+| [`playback/01-engine.md`](playback/01-engine.md) | `Engine` trait façade, `MpvEngine` dlopen strategy, gapless audio, ReplayGain, Loudnorm fallback, `BOOMING_MPV_LIBRARY` discovery order |
+| [`playback/02-playback-service.md`](playback/02-playback-service.md) | `PlaybackService` (Arc<Mutex>), IPC commands, queue, repeat/shuffle ban list, `playback-state-changed` event |
+| [`packaging/01-bundle.md`](packaging/01-bundle.md) | Per-OS bundling strategy, `tauri.conf.json` `bundle.resources`, placeholder stubs, `scripts/fetch-mpv-libs.sh`, release build order |
 | [`CHANGELOG.md`](CHANGELOG.md) | Project and docs revision history (this language) |
 
 ## Domain map
 
-- **bootstrap** — environment and toolchain facts, how to verify builds,
-  host package-manager notes, runtime library installation.
-- *(planned)* **architecture** — engine facade, IPC surface, UI state.
-- *(planned)* **engine** — libmpv backend details, discovery rules,
-  M1 playback wiring.
+- **architecture** — system shape, module decomposition, IPC surface, frontend design, Android parity, key architecture decisions.
+- **bootstrap** — environment and toolchain facts, verification matrix, runtime library installation, bun + Material 3 adoption.
+- **library** — SQLite schema, `lofty` tag extraction, `Scanner`, `scan_folder`, `Playlist`, `cover_cache`, `replaygain`.
+- **playback** — `Engine` trait façade, `NullEngine`, `MpvEngine`, `PlaybackService`, ReplayGain application, queue and repeat/shuffle logic.
+- **packaging** — per-OS release builds, Tauri bundle config, fetch-mpv-libs script, placeholder stubs, release step order.
 
 ## Key project rules
 
