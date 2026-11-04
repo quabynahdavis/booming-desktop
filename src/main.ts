@@ -1,5 +1,25 @@
 import { invoke } from "@tauri-apps/api/core";
 import "./styles.css";
+import { Router } from "./router.js";
+import { songsScreen } from "./screens/songs.js";
+import { albumsScreen } from "./screens/albums.js";
+import { artistsScreen } from "./screens/artists.js";
+import { foldersScreen } from "./screens/folders.js";
+import { playlistsScreen } from "./screens/playlists.js";
+import { recentlyPlayedScreen } from "./screens/recently-played.js";
+import { mostPlayedScreen } from "./screens/most-played.js";
+import { settingsScreen } from "./screens/settings.js";
+
+Router.register("songs", songsScreen);
+Router.register("albums", albumsScreen);
+Router.register("artists", artistsScreen);
+Router.register("folders", foldersScreen);
+Router.register("playlists", playlistsScreen);
+Router.register("recently-played", recentlyPlayedScreen);
+Router.register("most-played", mostPlayedScreen);
+Router.register("settings", settingsScreen);
+
+Router.init();
 
 const FALLBACK_COVER =
   "data:image/svg+xml;utf8," +
@@ -30,64 +50,6 @@ interface PlaybackState {
   current_song?: Song & { cover?: number[] };
   queue: number[];
 }
-
-const listEl = document.querySelector<HTMLElement>('#song-list');
-const searchEl = document.querySelector<HTMLInputElement>('#search');
-const emptyEl = document.querySelector<HTMLElement>('#empty-state');
-
-let songs: Song[] = [];
-
-function formatDuration(sec?: number) {
-  if (!sec) return '—';
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${m}:${s.toString().padStart(2,'0')}`;
-}
-
-function render() {
-  if (!listEl) return;
-  listEl.innerHTML = '';
-  const q = (searchEl?.value ?? '').toLowerCase();
-  const filtered = songs.filter(s => {
-    if (!q) return true;
-    return [s.title, s.artist, s.album].filter(Boolean).some(v => v!.toLowerCase().includes(q));
-  });
-  if (filtered.length === 0) {
-    if (emptyEl) emptyEl.hidden = false;
-    return;
-  }
-  if (emptyEl) emptyEl.hidden = true;
-  for (const s of filtered.slice(0, 200)) {
-    const div = document.createElement('div');
-    div.textContent = `${s.title ?? 'Unknown'} — ${s.artist ?? ''} • ${s.album ?? ''} • ${formatDuration(s.duration)}`;
-    div.style.padding = '8px';
-    div.style.cursor = 'pointer';
-    div.addEventListener('click', async () => {
-      try { await invoke('play_song', { song_id: s.id }); } catch {}
-    });
-    listEl.appendChild(div);
-  }
-}
-
-async function loadSongs() {
-  songs = [];
-  render();
-}
-
-document.querySelector<HTMLElement>('#add-folder')?.addEventListener('click', async () => {
-  try {
-    await invoke('scan_start', { root: '/tmp/music' });
-    await loadSongs();
-  } catch {}
-});
-
-let timer: number;
-searchEl?.addEventListener('input', () => {
-  clearTimeout(timer);
-  timer = window.setTimeout(render, 200);
-});
-
-loadSongs();
 
 // Player panel logic
 const panel = document.querySelector<HTMLElement>('#player-panel');

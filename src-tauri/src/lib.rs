@@ -50,7 +50,13 @@ pub fn run() {
             commands::reorder_playlist,
             commands::import_m3u,
             commands::export_m3u,
-            commands::get_cover_data_url
+            commands::get_cover_data_url,
+            commands::list_albums,
+            commands::list_artists,
+            commands::list_folders,
+            commands::list_genres,
+            commands::get_album_songs,
+            commands::get_artist_songs
         ])
         .setup(|app| {
             // set app handle for events

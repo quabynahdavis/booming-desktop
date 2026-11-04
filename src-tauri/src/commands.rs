@@ -172,3 +172,60 @@ pub(crate) async fn get_cover_data_url(app: AppHandle, song_id: i64) -> Result<O
     let cache = cover_cache();
     Ok(cache.get_data_url(&db, song_id, 512 * 1024))
 }
+
+#[tauri::command]
+pub(crate) async fn list_albums(app: AppHandle, sort: String, page: usize, page_size: usize) -> Result<Vec<crate::library::db::Album>, String> {
+    use crate::library::db::SortBy;
+    let db = get_db(&app)?;
+    let sort_by = match sort.as_str() {
+        "title" => SortBy::Title,
+        "artist" => SortBy::Artist,
+        "year" => SortBy::Year,
+        "added" => SortBy::Added,
+        "playcount" => SortBy::PlayCount,
+        _ => SortBy::Title,
+    };
+    db.list_albums(sort_by, page, page_size).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn list_artists(app: AppHandle, sort: String, page: usize, page_size: usize) -> Result<Vec<crate::library::db::Artist>, String> {
+    use crate::library::db::SortBy;
+    let db = get_db(&app)?;
+    let sort_by = match sort.as_str() {
+        "artist" => SortBy::Artist,
+        "playcount" => SortBy::PlayCount,
+        _ => SortBy::Artist,
+    };
+    db.list_artists(sort_by, page, page_size).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn list_folders(app: AppHandle, root: String) -> Result<Vec<crate::library::db::Folder>, String> {
+    let db = get_db(&app)?;
+    db.list_folders(&root).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn list_genres(app: AppHandle, sort: String, page: usize, page_size: usize) -> Result<Vec<crate::library::db::Genre>, String> {
+    use crate::library::db::SortBy;
+    let db = get_db(&app)?;
+    let sort_by = match sort.as_str() {
+        "title" => SortBy::Title,
+        "playcount" => SortBy::PlayCount,
+        _ => SortBy::Title,
+    };
+    db.list_genres(sort_by, page, page_size).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn get_album_songs(app: AppHandle, album_id: String) -> Result<Vec<crate::library::db::Song>, String> {
+    let db = get_db(&app)?;
+    db.get_album_songs(&album_id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn get_artist_songs(app: AppHandle, name: String) -> Result<Vec<crate::library::db::Song>, String> {
+    let db = get_db(&app)?;
+    db.get_artist_songs(&name).map_err(|e| e.to_string())
+}
