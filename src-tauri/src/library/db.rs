@@ -88,6 +88,10 @@ impl Db {
         Ok(Self { conn })
     }
 
+    pub fn connection(&self) -> &Connection {
+        &self.conn
+    }
+
     pub fn insert_or_update_song(&self, meta: &crate::library::scan::TrackMeta) -> SqlResult<()> {
         let now = chrono::Utc::now().to_rfc3339();
         self.conn.execute(

@@ -41,7 +41,16 @@ pub fn run() {
             commands::next_track,
             commands::previous_track,
             commands::get_playback_state,
-            commands::set_replay_gain_mode
+            commands::set_replay_gain_mode,
+            commands::list_playlists,
+            commands::list_playlist_songs,
+            commands::create_playlist,
+            commands::add_song_to_playlist,
+            commands::remove_from_playlist,
+            commands::reorder_playlist,
+            commands::import_m3u,
+            commands::export_m3u,
+            commands::get_cover_data_url
         ])
         .setup(|app| {
             // set app handle for events
