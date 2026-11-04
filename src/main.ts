@@ -9,6 +9,7 @@ import { playlistsScreen } from "./screens/playlists.js";
 import { recentlyPlayedScreen } from "./screens/recently-played.js";
 import { mostPlayedScreen } from "./screens/most-played.js";
 import { settingsScreen } from "./screens/settings.js";
+import { nowPlayingScreen } from "./screens/now-playing.js";
 
 Router.register("songs", songsScreen);
 Router.register("albums", albumsScreen);
@@ -17,6 +18,7 @@ Router.register("folders", foldersScreen);
 Router.register("playlists", playlistsScreen);
 Router.register("recently-played", recentlyPlayedScreen);
 Router.register("most-played", mostPlayedScreen);
+Router.register("now-playing", nowPlayingScreen);
 Router.register("settings", settingsScreen);
 
 Router.init();
