@@ -14,7 +14,8 @@ use crate::library::db::Db;
 use crate::library::playlist::{self, Playlist, SongPath};
 use crate::library::scan::Scanner;
 use crate::library::cover_cache::CoverCache;
-use crate::playback::{PlaybackService, PlaybackStateInfo, GainMode};
+use crate::library::settings::Settings;
+use crate::playback::{PlaybackService, PlaybackStateInfo, GainMode, RepeatMode};
 use std::sync::OnceLock;
 
 #[tauri::command]
@@ -240,4 +241,49 @@ pub(crate) async fn get_recently_played(app: AppHandle, limit: usize) -> Result<
 pub(crate) async fn get_most_played(app: AppHandle, limit: usize) -> Result<Vec<crate::library::db::Song>, String> {
     let db = get_db(&app)?;
     db.get_most_played(limit).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn set_repeat_mode(app: AppHandle, playback: State<'_, Arc<PlaybackService>>, mode: String) -> Result<(), String> {
+    let repeat_mode = match mode.as_str() {
+        "One" => RepeatMode::One,
+        "All" => RepeatMode::All,
+        _ => RepeatMode::None,
+    };
+    playback.set_repeat(repeat_mode);
+    // persist to settings
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    let mut settings = Settings::load(&settings_path);
+    settings.repeat_mode = mode;
+    settings.save(&settings_path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) async fn get_repeat_mode(playback: State<'_, Arc<PlaybackService>>) -> Result<String, String> {
+    let mode = playback.get_repeat();
+    let s = match mode {
+        RepeatMode::None => "None",
+        RepeatMode::One => "One",
+        RepeatMode::All => "All",
+    };
+    Ok(s.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn set_shuffle(app: AppHandle, playback: State<'_, Arc<PlaybackService>>, enabled: bool) -> Result<(), String> {
+    playback.set_shuffle(enabled);
+    // persist to settings
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    let mut settings = Settings::load(&settings_path);
+    settings.shuffle_enabled = enabled;
+    settings.save(&settings_path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) async fn get_shuffle(playback: State<'_, Arc<PlaybackService>>) -> Result<bool, String> {
+    Ok(playback.get_shuffle())
 }

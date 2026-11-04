@@ -8,6 +8,8 @@ pub struct Settings {
     pub theme: String,
     pub replay_gain_mode: String,
     pub audio_filter: String,
+    pub repeat_mode: String,
+    pub shuffle_enabled: bool,
 }
 
 impl Settings {
@@ -24,6 +26,8 @@ impl Settings {
             theme: "system".to_string(),
             replay_gain_mode: "off".to_string(),
             audio_filter: "".to_string(),
+            repeat_mode: "None".to_string(),
+            shuffle_enabled: false,
         }
     }
 

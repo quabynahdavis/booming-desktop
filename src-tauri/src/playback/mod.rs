@@ -197,8 +197,16 @@ impl PlaybackService {
         *self.repeat.lock().unwrap() = mode;
     }
 
+    pub fn get_repeat(&self) -> RepeatMode {
+        *self.repeat.lock().unwrap()
+    }
+
     pub fn set_shuffle(&self, shuffle: bool) {
         *self.shuffle.lock().unwrap() = shuffle;
+    }
+
+    pub fn get_shuffle(&self) -> bool {
+        *self.shuffle.lock().unwrap()
     }
 }
 
