@@ -147,11 +147,37 @@ export function nowPlayingScreen() {
   volumeSlider.setAttribute('value', '100');
   volumeSlider.style.flex = '1';
 
+  const balanceSlider = document.createElement('md-slider');
+  balanceSlider.setAttribute('min', '-100');
+  balanceSlider.setAttribute('max', '100');
+  balanceSlider.setAttribute('value', '0');
+  balanceSlider.style.width = '120px';
+
+  const speedSeg = document.createElement('md-segmented-button');
+  speedSeg.style.display = 'flex';
+  ['0.5x','0.75x','1.0x','1.25x','1.5x'].forEach(v => {
+    const btn = document.createElement('md-segmented-button');
+    // Actually use button inside? Simplify: use md-text-button
+  });
+  // Simpler: use a select of md-text-button with data-speed
+  const speedWrap = document.createElement('div');
+  speedWrap.style.display = 'flex';
+  speedWrap.style.gap = '4px';
+  const speeds = [0.5,0.75,1.0,1.25,1.5];
+  speeds.forEach(s => {
+    const b = document.createElement('md-text-button');
+    b.textContent = `${s}x`;
+    b.dataset.speed = String(s);
+    speedWrap.appendChild(b);
+  });
+
   const timerBtn = document.createElement('md-icon-button');
   timerBtn.setAttribute('aria-label', 'sleep timer');
   timerBtn.innerHTML = '<md-icon>timer</md-icon>';
 
   bottomBar.appendChild(volumeSlider);
+  bottomBar.appendChild(balanceSlider);
+  bottomBar.appendChild(speedWrap);
   bottomBar.appendChild(timerBtn);
 
   // sleep timer dialog
@@ -247,6 +273,51 @@ export function nowPlayingScreen() {
       repeatBtn.innerHTML = `<md-icon>${repeatMode === 'one' ? 'repeat_one' : 'repeat'}</md-icon>`;
     } catch {}
   });
+
+  // volume / balance / speed
+  let volumeUpdating = false;
+  volumeSlider.addEventListener('input', () => {
+    const v = Number((volumeSlider as any).value) / 100;
+    volumeUpdating = true;
+    invoke('set_volume', { vol: v }).catch(() => {});
+  });
+  balanceSlider.addEventListener('input', () => {
+    const b = Number((balanceSlider as any).value) / 100;
+    invoke('set_balance', { balance: b }).catch(() => {});
+  });
+  speedWrap.querySelectorAll('md-text-button').forEach((btn: any) => {
+    btn.addEventListener('click', () => {
+      const s = Number(btn.dataset.speed);
+      invoke('set_speed', { speed: s }).catch(() => {});
+    });
+  });
+  // keyboard bindings
+  const keyHandler = (e: KeyboardEvent) => {
+    if (e.target instanceof HTMLInputElement) return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      playBtn.click();
+    } else if (e.code === 'ArrowLeft') {
+      e.preventDefault();
+      invoke('seek_playback', { secs: -5 }).catch(() => {});
+    } else if (e.code === 'ArrowRight') {
+      e.preventDefault();
+      invoke('seek_playback', { secs: 5 }).catch(() => {});
+    } else if (e.code === 'ArrowUp') {
+      e.preventDefault();
+      const cur = Number((volumeSlider as any).value);
+      const next = Math.min(100, cur + 5);
+      (volumeSlider as any).value = next;
+      invoke('set_volume', { vol: next / 100 }).catch(() => {});
+    } else if (e.code === 'ArrowDown') {
+      e.preventDefault();
+      const cur = Number((volumeSlider as any).value);
+      const next = Math.max(0, cur - 5);
+      (volumeSlider as any).value = next;
+      invoke('set_volume', { vol: next / 100 }).catch(() => {});
+    }
+  };
+  document.addEventListener('keydown', keyHandler);
 
   // seek
   let seeking = false;

@@ -65,7 +65,11 @@ pub fn run() {
             commands::get_shuffle,
             commands::set_sleep_timer,
             commands::cancel_sleep_timer,
-            commands::get_sleep_timer_status
+            commands::get_sleep_timer_status,
+            commands::set_volume,
+            commands::get_volume,
+            commands::set_balance,
+            commands::set_speed
         ])
         .setup(|app| {
             // set app handle for events

@@ -29,6 +29,9 @@ pub struct PlaybackService {
     sleep_target: Mutex<Option<Instant>>,
     sleep_enabled: Mutex<bool>,
     sleep_handle: Mutex<Option<tokio::task::JoinHandle<()>>>,
+    volume: Mutex<f64>,
+    balance: Mutex<f64>,
+    speed: Mutex<f64>,
 }
 
 impl PlaybackService {
@@ -45,6 +48,9 @@ impl PlaybackService {
             sleep_target: Mutex::new(None),
             sleep_enabled: Mutex::new(false),
             sleep_handle: Mutex::new(None),
+            volume: Mutex::new(1.0),
+            balance: Mutex::new(0.0),
+            speed: Mutex::new(1.0),
         }
     }
 
@@ -277,6 +283,33 @@ impl PlaybackService {
             enabled,
             remaining_secs,
         }
+    }
+
+    pub fn set_volume(&self, vol: f64) {
+        let clamped = vol.max(0.0).min(1.0);
+        *self.volume.lock().unwrap() = clamped;
+    }
+
+    pub fn get_volume(&self) -> f64 {
+        *self.volume.lock().unwrap()
+    }
+
+    pub fn set_balance(&self, balance: f64) {
+        let clamped = balance.max(-1.0).min(1.0);
+        *self.balance.lock().unwrap() = clamped;
+    }
+
+    pub fn get_balance(&self) -> f64 {
+        *self.balance.lock().unwrap()
+    }
+
+    pub fn set_speed(&self, speed: f64) {
+        let clamped = speed.max(0.5).min(2.0);
+        *self.speed.lock().unwrap() = clamped;
+    }
+
+    pub fn get_speed(&self) -> f64 {
+        *self.speed.lock().unwrap()
     }
 }
 

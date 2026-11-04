@@ -304,3 +304,26 @@ pub(crate) async fn cancel_sleep_timer(playback: State<'_, Arc<PlaybackService>>
 pub(crate) async fn get_sleep_timer_status(playback: State<'_, Arc<PlaybackService>>) -> Result<crate::playback::SleepTimerStatus, String> {
     Ok(playback.get_sleep_timer_status())
 }
+
+#[tauri::command]
+pub(crate) async fn set_volume(playback: State<'_, Arc<PlaybackService>>, vol: f64) -> Result<(), String> {
+    playback.set_volume(vol);
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) async fn get_volume(playback: State<'_, Arc<PlaybackService>>) -> Result<f64, String> {
+    Ok(playback.get_volume())
+}
+
+#[tauri::command]
+pub(crate) async fn set_balance(playback: State<'_, Arc<PlaybackService>>, balance: f64) -> Result<(), String> {
+    playback.set_balance(balance);
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) async fn set_speed(playback: State<'_, Arc<PlaybackService>>, speed: f64) -> Result<(), String> {
+    playback.set_speed(speed);
+    Ok(())
+}
