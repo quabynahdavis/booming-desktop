@@ -1,6 +1,18 @@
 import { invoke } from "@tauri-apps/api/core";
 import "./styles.css";
 
+const FALLBACK_COVER =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\">" +
+      "<defs><linearGradient id=\"g\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">" +
+      "<stop offset=\"0\" stop-color=\"#7c3aed\"/><stop offset=\"1\" stop-color=\"#06b6d4\"/>" +
+      "</linearGradient></defs>" +
+      "<rect width=\"64\" height=\"64\" fill=\"url(#g)\"/>" +
+      "<text x=\"32\" y=\"38\" fill=\"#fff\" font-size=\"26\" text-anchor=\"middle\" font-family=\"system-ui\">&#x266B;</text>" +
+    "</svg>"
+  );
+
 interface Song {
   id: number;
   title?: string;
@@ -86,6 +98,7 @@ const nextBtn = document.querySelector<HTMLButtonElement>('#player-next');
 const titleEl = document.querySelector<HTMLElement>('#player-title');
 const artistEl = document.querySelector<HTMLElement>('#player-artist');
 const coverEl = document.querySelector<HTMLImageElement>('#player-cover');
+let lastSongId: number | null = null;
 const progressEl = document.querySelector<HTMLInputElement>('#player-progress');
 const queueEl = document.querySelector<HTMLElement>('#player-queue-list');
 
@@ -138,6 +151,17 @@ async function pollState() {
     if (progressEl && state.duration > 0) {
       const pct = Math.min(100, Math.max(0, (state.position / state.duration) * 100));
       progressEl.value = String(pct);
+    }
+    if (coverEl && state.current_song_id) {
+      if (lastSongId !== state.current_song_id) {
+        lastSongId = state.current_song_id;
+        try {
+          const dataUrl = await invoke<string | null>('get_cover_data_url', { song_id: state.current_song_id });
+          coverEl.src = dataUrl || FALLBACK_COVER;
+        } catch {
+          coverEl.src = FALLBACK_COVER;
+        }
+      }
     }
     if (queueEl) {
       queueEl.innerHTML = '';
