@@ -4,22 +4,50 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Booming Desktop</title>
+    <script type="module" src="/node_modules/@material/web/all.js"></script>
   </head>
   <body>
-    <main id="app">
-      <header style="display:flex;align-items:center;justify-content:space-between;padding:16px">
-        <h1 style="margin:0;font-size:20px">Booming</h1>
-        <button id="add-folder">Add folder</button>
-      </header>
-      <div style="padding:16px">
-        <input id="search" placeholder="Search" style="width:100%;padding:8px;margin-bottom:16px" />
-        <div id="song-list"></div>
-        <div id="empty-state" style="text-align:center;margin-top:64px">
-          <p>No songs yet</p>
-          <button>Add music folder</button>
-        </div>
-      </div>
-    </main>
+    <div id="layout">
+      <nav id="nav-drawer">
+        <md-navigation-drawer pivot="start">
+          <md-list>
+            <md-list-item data-route="songs" selected>
+              <div slot="headline">Songs</div>
+            </md-list-item>
+            <md-list-item data-route="albums">
+              <div slot="headline">Albums</div>
+            </md-list-item>
+            <md-list-item data-route="artists">
+              <div slot="headline">Artists</div>
+            </md-list-item>
+            <md-list-item data-route="playlists">
+              <div slot="headline">Playlists</div>
+            </md-list-item>
+            <md-list-item data-route="folders">
+              <div slot="headline">Folders</div>
+            </md-list-item>
+
+            <md-divider style="margin: 8px 0;"></md-divider>
+
+            <md-list-item data-route="recently-played">
+              <div slot="headline">Recently Played</div>
+            </md-list-item>
+            <md-list-item data-route="most-played">
+              <div slot="headline">Most Played</div>
+            </md-list-item>
+
+            <md-divider style="margin: 8px 0;"></md-divider>
+
+            <md-list-item data-route="settings">
+              <div slot="headline">Settings</div>
+            </md-list-item>
+          </md-list>
+        </md-navigation-drawer>
+      </nav>
+
+      <main id="app"></main>
+    </div>
+
     <div id="player-panel" class="player-panel">
       <div class="player-handle"></div>
       <div class="player-collapsed">
