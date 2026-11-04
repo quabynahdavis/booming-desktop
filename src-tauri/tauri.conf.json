@@ -29,6 +29,12 @@
     "targets": ["deb", "appimage"],
     "category": "Audio",
     "shortDescription": "Offline music player",
-    "icon": ["icons/32x32.png", "icons/icon.png"]
+    "icon": ["icons/32x32.png", "icons/icon.png"],
+    "resources": [
+      "resources/",
+      "resources/mpv/libmpv.so.2",
+      "resources/mpv/libmpv-2.dll",
+      "resources/mpv/libmpv.dylib"
+    ]
   }
 }

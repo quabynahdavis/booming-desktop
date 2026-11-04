@@ -114,3 +114,50 @@ mount `mpv` and print an mpv version like `mpv 0.40.x` from the probe.
   outside the standard Tauri boilerplate and the dlopen filename tables).
 - Migration of `engine/mpv/ffi.rs` to the full `libmpv2` safe binding once
   host machines link libmpv (localized swap behind `MpvSymbols`).
+
+## 7. Bundling the mpv engine
+
+At release time the Tauri bundle (`src-tauri/tauri.conf.json` →
+`bundle.resources`) points at these placeholders:
+
+```
+resources/mpv/libmpv.so.2    (Linux)
+resources/mpv/libmpv-2.dll   (Windows)
+resources/mpv/libmpv.dylib   (macOS)
+```
+
+Generate the real binaries before the bundle step:
+
+```sh
+scripts/fetch-mpv-libs.sh linux   # Linux: curl from mpv devfiles
+scripts/fetch-mpv-libs.sh windows # Windows: curl from mpv release zip
+scripts/fetch-mpv-libs.sh macos   # macOS: copy libmpv from Homebrew / mpv DMG
+```
+
+Linux line:
+
+```
+curl -L -o resources/mpv/libmpv.so.2 https://mpv.io/downloads/mpv-devfiles/libmpv.so.2
+```
+
+Windows line:
+
+```
+curl -L -o resources/mpv/libmpv-2.dll https://github.com/mpv-player/mpv/releases/download/v0.39.0/mpv-x86_64-vulkan-20240119-git-9643e06.zip
+```
+
+(extract `libmpv-2.dll` from the zip onto the target name above).
+
+macOS sources (choose one; the script documents the same choices):
+
+* Homebrew formula `libmpv` (`brew install libmpv`) — copy
+  `"$(brew --prefix)/lib/libmpv.dylib"` into `resources/mpv/`.
+* Homebrew cask (`brew install --cask mpv`) — copy the DMG's
+  `libmpv.dylib` (or equivalent framework resource) into `resources/mpv/`.
+* Official mpv release DMG — mount the DMG and copy
+  `/Library/Frameworks/mpv.framework/Versions/*/Resources/libmpv.dylib`.
+
+The fetch step is a pre-release step; the placeholders ship with the repo
+and remain safe until a release build is cut. Release builds should also pin
+a concrete mpv version instead of the "latest devfiles" URL above.
+
