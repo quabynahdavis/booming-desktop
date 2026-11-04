@@ -229,3 +229,15 @@ pub(crate) async fn get_artist_songs(app: AppHandle, name: String) -> Result<Vec
     let db = get_db(&app)?;
     db.get_artist_songs(&name).map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub(crate) async fn get_recently_played(app: AppHandle, limit: usize) -> Result<Vec<crate::library::db::Song>, String> {
+    let db = get_db(&app)?;
+    db.get_recently_played(limit).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn get_most_played(app: AppHandle, limit: usize) -> Result<Vec<crate::library::db::Song>, String> {
+    let db = get_db(&app)?;
+    db.get_most_played(limit).map_err(|e| e.to_string())
+}

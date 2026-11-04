@@ -56,7 +56,9 @@ pub fn run() {
             commands::list_folders,
             commands::list_genres,
             commands::get_album_songs,
-            commands::get_artist_songs
+            commands::get_artist_songs,
+            commands::get_recently_played,
+            commands::get_most_played
         ])
         .setup(|app| {
             // set app handle for events
