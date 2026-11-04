@@ -154,7 +154,29 @@ export function nowPlayingScreen() {
   bottomBar.appendChild(volumeSlider);
   bottomBar.appendChild(timerBtn);
 
-  container.append(coverWrapper, meta, progressRow, controls, bottomBar);
+  // sleep timer dialog
+  const dialog = document.createElement('md-dialog');
+  dialog.id = 'sleep-timer-dialog';
+  const dialogTitle = document.createElement('div');
+  dialogTitle.slot = 'headline';
+  dialogTitle.textContent = 'Sleep Timer';
+  const dialogContent = document.createElement('div');
+  dialogContent.innerHTML = `
+    <div style="display:flex;gap:8px;margin:8px 0;">
+      <button data-preset="15">15m</button>
+      <button data-preset="30">30m</button>
+      <button data-preset="60">60m</button>
+    </div>
+    <md-text-field id="sleep-minutes" type="number" label="Minutes" value="30"></md-text-field>
+    <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
+      <md-text-button id="sleep-cancel">Cancel</md-text-button>
+      <md-filled-button id="sleep-set">Set</md-filled-button>
+    </div>
+  `;
+  const dialogActions = document.createElement('div');
+  dialogActions.slot = 'actions';
+  dialog.append(dialogTitle, dialogContent);
+  container.append(coverWrapper, meta, progressRow, controls, bottomBar, dialog);
 
   // state
   let lastSongId: number | null = null;
@@ -235,6 +257,52 @@ export function nowPlayingScreen() {
     const secs = (pct / 100) * currentDuration;
     try { await invoke('seek_playback', { secs }); } catch {}
     seeking = false;
+  });
+
+  // sleep timer dialog
+  let sleepPoll: number | undefined;
+  const minutesField = dialogContent.querySelector('#sleep-minutes') as HTMLInputElement;
+  const setBtn = dialogContent.querySelector('#sleep-set') as HTMLButtonElement;
+  const cancelBtn = dialogContent.querySelector('#sleep-cancel') as HTMLButtonElement;
+  const presetBtns = dialogContent.querySelectorAll('button[data-preset]');
+
+  timerBtn.addEventListener('click', async () => {
+    try {
+      const status = await invoke<{ enabled: boolean; remaining_secs: number }>('get_sleep_timer_status');
+      if (status.enabled) {
+        minutesField.value = String(Math.ceil(status.remaining_secs / 60));
+      }
+      dialog.show();
+      dialogTitle.textContent = status.enabled ? `Sleep Timer (${formatTime(status.remaining_secs)})` : 'Sleep Timer';
+      if (sleepPoll) clearInterval(sleepPoll);
+      sleepPoll = window.setInterval(async () => {
+        try {
+          const s = await invoke<{ enabled: boolean; remaining_secs: number }>('get_sleep_timer_status');
+          if (s.enabled) {
+            dialogTitle.textContent = `Sleep Timer (${formatTime(s.remaining_secs)})`;
+          }
+        } catch {}
+      }, 1000);
+    } catch {}
+  });
+
+  setBtn.addEventListener('click', async () => {
+    const mins = Number(minutesField.value) || 0;
+    try {
+      await invoke('set_sleep_timer', { minutes: mins });
+      dialog.close();
+    } catch {}
+  });
+  cancelBtn.addEventListener('click', async () => {
+    try {
+      await invoke('cancel_sleep_timer');
+      dialog.close();
+    } catch {}
+  });
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      minutesField.value = btn.getAttribute('data-preset') || '30';
+    });
   });
 
   // poll

@@ -2,6 +2,7 @@ pub mod replaygain;
 pub use replaygain::GainMode;
 
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 use tauri::Emitter;
 use tauri::AppHandle;
 
@@ -25,6 +26,9 @@ pub struct PlaybackService {
     last_played_ids: Mutex<Vec<i64>>,
     app_handle: Mutex<Option<AppHandle>>,
     replay_gain_mode: Mutex<GainMode>,
+    sleep_target: Mutex<Option<Instant>>,
+    sleep_enabled: Mutex<bool>,
+    sleep_handle: Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
 impl PlaybackService {
@@ -38,6 +42,9 @@ impl PlaybackService {
             last_played_ids: Mutex::new(Vec::new()),
             app_handle: Mutex::new(None),
             replay_gain_mode: Mutex::new(GainMode::Off),
+            sleep_target: Mutex::new(None),
+            sleep_enabled: Mutex::new(false),
+            sleep_handle: Mutex::new(None),
         }
     }
 
@@ -208,6 +215,75 @@ impl PlaybackService {
     pub fn get_shuffle(&self) -> bool {
         *self.shuffle.lock().unwrap()
     }
+
+    pub fn set_sleep_timer(&self, minutes: i64) {
+        // cancel existing
+        self.cancel_sleep_timer_internal();
+        if minutes <= 0 {
+            return;
+        }
+        let target = Instant::now() + Duration::from_secs((minutes as u64) * 60);
+        *self.sleep_target.lock().unwrap() = Some(target);
+        *self.sleep_enabled.lock().unwrap() = true;
+
+        let engine = self.engine.clone();
+        let app_handle_opt = {
+            let guard = self.app_handle.lock().unwrap();
+            guard.clone()
+        };
+        let handle = tokio::spawn(async move {
+            let duration = Duration::from_secs((minutes as u64) * 60);
+            tokio::time::sleep(duration).await;
+            // pause playback
+            let eng = engine.lock().unwrap();
+            let _ = eng.pause();
+            drop(eng);
+            if let Some(handle) = app_handle_opt {
+                let _ = handle.emit("sleep-timer-fired", ());
+            }
+        });
+        *self.sleep_handle.lock().unwrap() = Some(handle);
+    }
+
+    pub fn cancel_sleep_timer(&self) {
+        self.cancel_sleep_timer_internal();
+    }
+
+    fn cancel_sleep_timer_internal(&self) {
+        if let Some(handle) = self.sleep_handle.lock().unwrap().take() {
+            handle.abort();
+        }
+        *self.sleep_target.lock().unwrap() = None;
+        *self.sleep_enabled.lock().unwrap() = false;
+    }
+
+    pub fn get_sleep_timer_status(&self) -> SleepTimerStatus {
+        let enabled = *self.sleep_enabled.lock().unwrap();
+        let remaining_secs = if enabled {
+            if let Some(target) = *self.sleep_target.lock().unwrap() {
+                let now = Instant::now();
+                if target > now {
+                    target.duration_since(now).as_secs() as i64
+                } else {
+                    0
+                }
+            } else {
+                0
+            }
+        } else {
+            0
+        };
+        SleepTimerStatus {
+            enabled,
+            remaining_secs,
+        }
+    }
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct SleepTimerStatus {
+    pub enabled: bool,
+    pub remaining_secs: i64,
 }
 
 #[derive(Debug, serde::Serialize)]

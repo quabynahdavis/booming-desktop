@@ -62,7 +62,10 @@ pub fn run() {
             commands::set_repeat_mode,
             commands::get_repeat_mode,
             commands::set_shuffle,
-            commands::get_shuffle
+            commands::get_shuffle,
+            commands::set_sleep_timer,
+            commands::cancel_sleep_timer,
+            commands::get_sleep_timer_status
         ])
         .setup(|app| {
             // set app handle for events

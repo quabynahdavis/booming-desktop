@@ -287,3 +287,20 @@ pub(crate) async fn set_shuffle(app: AppHandle, playback: State<'_, Arc<Playback
 pub(crate) async fn get_shuffle(playback: State<'_, Arc<PlaybackService>>) -> Result<bool, String> {
     Ok(playback.get_shuffle())
 }
+
+#[tauri::command]
+pub(crate) async fn set_sleep_timer(playback: State<'_, Arc<PlaybackService>>, minutes: i64) -> Result<(), String> {
+    playback.set_sleep_timer(minutes);
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) async fn cancel_sleep_timer(playback: State<'_, Arc<PlaybackService>>) -> Result<(), String> {
+    playback.cancel_sleep_timer();
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) async fn get_sleep_timer_status(playback: State<'_, Arc<PlaybackService>>) -> Result<crate::playback::SleepTimerStatus, String> {
+    Ok(playback.get_sleep_timer_status())
+}
