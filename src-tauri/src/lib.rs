@@ -71,7 +71,10 @@ pub fn run() {
             commands::get_volume,
             commands::set_balance,
             commands::set_speed,
-            commands::parse_lrc
+            commands::parse_lrc,
+            commands::save_lrc_sidecar,
+            commands::load_lrc_sidecar,
+            commands::delete_lrc_sidecar
         ])
         .setup(|app| {
             // set app handle for events

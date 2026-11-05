@@ -22,7 +22,7 @@ interface PlaybackState {
   position: number;
   duration: number;
   current_song_id?: number;
-  current_song?: { title?: string; artist?: string; album?: string; duration?: number };
+  current_song?: { title?: string; artist?: string; album?: string; duration?: number; path?: string };
   queue: number[];
 }
 export function nowPlayingScreen() {
@@ -227,9 +227,17 @@ export function nowPlayingScreen() {
   let shuffle = false;
 
   // lyrics state
+  interface CurrentSong { title?: string; artist?: string; album?: string; duration?: number; path?: string }
+  let currentSong: CurrentSong | null = null;
+  let loadedRaw: string | null = null; // best raw LRC text for the editor
+  let loadedFrom: string | null = null;
   let lyricsLoadToken = 0;
-  async function loadLyrics(song: { title?: string; artist?: string; album?: string; duration?: number } | undefined, fallbackDuration: number) {
+
+  async function loadLyrics(song: CurrentSong | undefined, fallbackDuration: number) {
     const token = ++lyricsLoadToken;
+    currentSong = song ?? null;
+    loadedRaw = null;
+    loadedFrom = null;
     lyricsView.setHeader(song?.title ?? null, song?.artist ?? null);
     if (!song?.title || !song?.artist) {
       lyricsView.setLyrics(null, null, null);
@@ -237,6 +245,22 @@ export function nowPlayingScreen() {
       return;
     }
     lyricsView.setLyrics(null, null, null);
+
+    // Preference order (P7 contract): sidecar .lrc → LRCLIB → nothing.
+    if (song.path) {
+      let sidecarText: string | null = null;
+      try {
+        sidecarText = await invoke<string | null>('load_lrc_sidecar', { songPath: song.path });
+      } catch { sidecarText = null; }
+      if (token !== lyricsLoadToken) return;
+      if (sidecarText && sidecarText.trim()) {
+        loadedRaw = sidecarText;
+        loadedFrom = 'sidecar .lrc';
+        applyLyricsText(sidecarText, loadedFrom);
+        return;
+      }
+    }
+
     lyricsView.setStatus('Loading lyrics…');
     const durationSecs = song.duration || (fallbackDuration > 0 ? fallbackDuration : null);
     let res: Awaited<ReturnType<typeof fetchLyrics>> | null = null;
@@ -257,13 +281,97 @@ export function nowPlayingScreen() {
       return;
     }
     if (res.syncedLyrics) {
-      lyricsView.setLyrics(parseLrc(res.syncedLyrics), null, 'LRCLIB');
+      loadedRaw = res.syncedLyrics;
+      loadedFrom = 'LRCLIB';
+      applyLyricsText(res.syncedLyrics, loadedFrom);
+    } else {
+      loadedRaw = res.plainLyrics;
+      loadedFrom = 'LRCLIB (plain)';
+      applyLyricsText(res.plainLyrics ?? '', loadedFrom);
+    }
+  }
+
+  /** Parse + render LRC (or plain) text; keeps `loadedRaw` for the editor. */
+  function applyLyricsText(raw: string, source: string) {
+    if (!raw.trim()) {
+      lyricsView.setLyrics(null, null, null);
+      lyricsView.setStatus('Lyrics file is empty');
+      return;
+    }
+    const parsed = parseLrc(raw);
+    if (parsed.lines.some((l) => l.timeMs > 0)) {
+      lyricsView.setLyrics(parsed, null, source);
       lyricsView.setStatus(null);
     } else {
-      lyricsView.setLyrics(null, res.plainLyrics, 'LRCLIB (plain)');
+      lyricsView.setLyrics(null, raw, source === 'sidecar .lrc' ? `${source} (plain)` : source);
       lyricsView.setStatus(null);
     }
   }
+
+  // lyrics editor (pencil → md-dialog with a textarea)
+  const editBtn = document.createElement('md-icon-button');
+  editBtn.setAttribute('aria-label', 'edit lyrics');
+  editBtn.setAttribute('title', 'Edit lyrics');
+  editBtn.innerHTML = '<md-icon>edit</md-icon>';
+  editBtn.style.cssText = 'position:absolute;top:4px;right:0;';
+
+  const editDialog = document.createElement('md-dialog') as MdDialog;
+  editDialog.id = 'lyrics-editor-dialog';
+  const editTitle = document.createElement('div');
+  editTitle.slot = 'headline';
+  editTitle.textContent = 'Edit lyrics (LRC)';
+  const editContent = document.createElement('div');
+  editContent.style.cssText = 'display:flex;flex-direction:column;gap:8px;min-width:560px;';
+  const editBar = document.createElement('div');
+  editBar.style.cssText = 'font-size:12px;color:var(--text-muted);';
+  const editArea = document.createElement('textarea');
+  editArea.rows = 16;
+  editArea.spellcheck = false;
+  editArea.style.cssText =
+    'width:100%;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;' +
+    'background:var(--panel,#171a21);color:var(--text,#e5e7eb);border:1px solid var(--border,#262b36);' +
+    'border-radius:10px;padding:10px;resize:vertical;';
+  editContent.append(editBar, editArea);
+  const editActions = document.createElement('div');
+  editActions.slot = 'actions';
+  const editCancel = document.createElement('md-text-button');
+  editCancel.textContent = 'Cancel';
+  const editSave = document.createElement('md-filled-button');
+  editSave.textContent = 'Save sidecar';
+  editActions.append(editCancel, editSave);
+  editDialog.append(editTitle, editContent, editActions);
+  container.append(editDialog);
+
+  // the pencil lives in the pane's top-right corner; hidden with the pane
+  lyricsWrap.style.position = 'relative';
+  lyricsWrap.appendChild(editBtn);
+
+  async function openLyricsEditor() {
+    if (!currentSong?.title) {
+      return;
+    }
+    editBar.textContent = `${currentSong.title}${currentSong.artist ? ` — ${currentSong.artist}` : ''} · source: ${loadedFrom ?? 'none'}`;
+    editArea.value = loadedRaw ?? '';
+    editDialog.show();
+  }
+
+  editBtn.addEventListener('click', () => { void openLyricsEditor(); });
+  editCancel.addEventListener('click', () => { editDialog.close(); });
+  editSave.addEventListener('click', async () => {
+    const song = currentSong;
+    if (!song?.path) {
+      editBar.textContent = 'Cannot save: the current track has no known path on disk.';
+      return;
+    }
+    try {
+      await invoke('save_lrc_sidecar', { songPath: song.path, lrcText: editArea.value });
+      editDialog.close();
+      // reload so the view reflects exactly what was written ("sidecar → provider")
+      if (lastSongId !== null) await loadLyrics(song, currentDuration);
+    } catch (err) {
+      editBar.textContent = `Save failed: ${String(err)}`;
+    }
+  });
 
   async function updateState() {
     try {

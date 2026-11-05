@@ -172,6 +172,24 @@ pub(crate) async fn parse_lrc(text: String) -> Result<crate::lyrics::lrc::Parsed
     Ok(crate::lyrics::lrc::parse_lrc(&text))
 }
 
+// sidecar .lrc files land next to the audio file.
+#[tauri::command]
+pub(crate) async fn save_lrc_sidecar(song_path: String, lrc_text: String) -> Result<String, String> {
+    crate::lyrics::sidecar::save(&song_path, &lrc_text)
+}
+
+/// Sidecar `.lrc` content for a song, or `None` when the song has none.
+#[tauri::command]
+pub(crate) async fn load_lrc_sidecar(song_path: String) -> Result<Option<String>, String> {
+    crate::lyrics::sidecar::load(&song_path)
+}
+
+/// Delete a song's sidecar `.lrc`; `true` when a file was removed.
+#[tauri::command]
+pub(crate) async fn delete_lrc_sidecar(song_path: String) -> Result<bool, String> {
+    crate::lyrics::sidecar::delete(&song_path)
+}
+
 fn cover_cache() -> &'static CoverCache {
     static CACHE: OnceLock<CoverCache> = OnceLock::new();
     CACHE.get_or_init(CoverCache::new)
