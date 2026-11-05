@@ -10,6 +10,7 @@
 mod commands;
 mod engine;
 mod library;
+mod lyrics;
 mod playback;
 
 use std::sync::Arc;
@@ -69,7 +70,8 @@ pub fn run() {
             commands::set_volume,
             commands::get_volume,
             commands::set_balance,
-            commands::set_speed
+            commands::set_speed,
+            commands::parse_lrc
         ])
         .setup(|app| {
             // set app handle for events

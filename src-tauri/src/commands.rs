@@ -162,6 +162,16 @@ pub(crate) async fn get_playback_state(app: AppHandle, playback: State<'_, Arc<P
     Ok(playback.get_state(&db))
 }
 
+/// Parse an LRC lyrics text into `{ metadata, lines }` with ms timestamps and
+/// optional word-level (karaoke) timings.
+///
+/// The frontend has its own TS mirror (`src/lyrics/lrc.ts`, same grammar) used
+/// for live rendering; the Rust side is canonical for file import/save.
+#[tauri::command]
+pub(crate) async fn parse_lrc(text: String) -> Result<crate::lyrics::lrc::ParsedLyrics, String> {
+    Ok(crate::lyrics::lrc::parse_lrc(&text))
+}
+
 fn cover_cache() -> &'static CoverCache {
     static CACHE: OnceLock<CoverCache> = OnceLock::new();
     CACHE.get_or_init(CoverCache::new)
