@@ -34,7 +34,7 @@ interface Mode {
   lines: LyricLine[];
 }
 
-const ACCENT = "var(--accent-a, #7c3aed)";
+const ACCENT = "var(--md-primary, var(--md-sys-color-primary))";
 
 export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsView {
   const el = document.createElement("div");
@@ -45,20 +45,20 @@ export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsVie
   const header = document.createElement("div");
   header.style.cssText = "display:flex;flex-direction:column;gap:2px;min-height:2.2em;padding:0 4px;";
   const titleEl = document.createElement("div");
-  titleEl.style.cssText = "font-size:16px;font-weight:600;color:var(--text);";
+  titleEl.style.cssText = "font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);";
   const sourceLine = document.createElement("div");
-  sourceLine.style.cssText = "font-size:12px;color:var(--text-muted);";
+  sourceLine.style.cssText = "font-size:12px;color:var(--md-sys-color-on-surface-variant);";
   header.append(titleEl, sourceLine);
 
   // Status chip ("Loading…", "Instrumental track", errors)
   const statusEl = document.createElement("div");
-  statusEl.style.cssText = "font-size:13px;color:var(--text-muted);min-height:1.2em;padding:0 4px;";
+  statusEl.style.cssText = "font-size:13px;color:var(--md-sys-color-on-surface-variant);min-height:1.2em;padding:0 4px;";
 
   // Scrollable lyric body
   const body = document.createElement("div");
   body.style.cssText =
     "flex:1;overflow-y:auto;max-height:66vh;border-radius:16px;padding:24px 14px;" +
-    "background:rgba(0,0,0,0.2);scroll-behavior:smooth;";
+    "background:var(--md-sys-color-surface-container-lowest);scroll-behavior:smooth;";
   el.append(header, body, statusEl);
 
   let mode: Mode = { kind: "empty", lines: [] };
@@ -112,7 +112,7 @@ export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsVie
         row.style.cssText =
           "padding:6px 4px;font-size:17px;line-height:1.45;cursor:pointer;" +
           "transition:opacity .25s,color .25s;user-select:none;text-align:left;" +
-          "font-weight:400;color:var(--text-muted);opacity:0.85;";
+          "font-weight:400;color:var(--md-sys-color-on-surface-variant);opacity:0.85;";
         if (line.words?.length) {
           line.words.forEach((word, wi) => {
             // Two-layer per-word fill (works without background-clip:text):
@@ -147,7 +147,7 @@ export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsVie
       block.className = "lyrics-plain";
       block.style.cssText =
         "margin:0;white-space:pre-wrap;font-family:inherit;font-size:16px;line-height:1.6;" +
-        "color:var(--text);cursor:default;";
+        "color:var(--md-sys-color-on-surface);cursor:default;";
       block.textContent = plainRaw;
       body.appendChild(block);
       lineEls = [block];
@@ -161,15 +161,15 @@ export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsVie
       if (index === activeIndex) {
         row.style.opacity = "1";
         row.style.fontWeight = "600";
-        row.style.color = "var(--text)";
+        row.style.color = "var(--md-sys-color-on-surface)";
       } else if (index < activeIndex) {
         row.style.opacity = "0.45"; // lines before the current one are dimmed
         row.style.fontWeight = "400";
-        row.style.color = "var(--text-muted)";
+        row.style.color = "var(--md-sys-color-on-surface-variant)";
       } else {
         row.style.opacity = "0.85"; // upcoming lines are muted
         row.style.fontWeight = "400";
-        row.style.color = "var(--text-muted)";
+        row.style.color = "var(--md-sys-color-on-surface-variant)";
       }
     }
   }

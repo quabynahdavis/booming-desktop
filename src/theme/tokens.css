@@ -1,0 +1,312 @@
+/**
+ * Booming Music — Material 3 color-role tokens.
+ *
+ * Ground truth: Android app res.
+ *  dark  : app/src/main/res/values-night/colors.xml  (md_theme_*)
+ *  light : app/src/main/res/values/colors.xml        (md_theme_*)
+ *
+ * Naming first follows the component system consumed by @material/web
+ * (`--md-sys-color-*`), with short aliases (`--md-primary`, …) for app styles.
+ * This is the ONLY stylesheet permitted to contain raw hex values, per the
+ * theming CI gate. `src/theme/dynamic-color.ts` may additionally set runtime
+ * generated color values for the accent scheme.
+ *
+ * Default scheme is dark (the app launches dark, `color-scheme: dark`);
+ * `[data-theme="light"]` on <html> switches to the light values.
+ */
+
+/* ---------------------------------------------------------------- *
+ * DARK SCHEME (default) — from values-night/colors.xml
+ * ---------------------------------------------------------------- */
+:root,
+:root[data-theme=dark] {
+  color-scheme: dark;
+
+  --md-sys-color-primary: #B6C4FF;
+  --md-sys-color-on-primary: #1E2D61;
+  --md-sys-color-primary-container: #354479;
+  --md-sys-color-on-primary-container: #DCE1FF;
+  --md-sys-color-secondary: #C2C5DD;
+  --md-sys-color-on-secondary: #2B3042;
+  --md-sys-color-secondary-container: #424659;
+  --md-sys-color-on-secondary-container: #DEE1F9;
+  --md-sys-color-tertiary: #E3BADA;
+  --md-sys-color-on-tertiary: #43273F;
+  --md-sys-color-tertiary-container: #5B3D57;
+  --md-sys-color-on-tertiary-container: #FFD7F5;
+  --md-sys-color-error: #FFB4AB;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000A;
+  --md-sys-color-on-error-container: #FFDAD6;
+  --md-sys-color-background: #121318;
+  --md-sys-color-on-background: #E3E1E9;
+  --md-sys-color-surface: #121318;
+  --md-sys-color-on-surface: #E3E1E9;
+  --md-sys-color-surface-variant: #45464F;
+  --md-sys-color-on-surface-variant: #C6C5D0;
+  --md-sys-color-outline: #90909A;
+  --md-sys-color-outline-variant: #45464F;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-inverse-surface: #E3E1E9;
+  --md-sys-color-inverse-on-surface: #2F3036;
+  --md-sys-color-inverse-primary: #4D5C92;
+  --md-sys-color-surface-dim: #121318;
+  --md-sys-color-surface-bright: #38393F;
+  --md-sys-color-surface-container-lowest: #0D0E13;
+  --md-sys-color-surface-container-low: #1A1B21;
+  --md-sys-color-surface-container: #1E1F25;
+  --md-sys-color-surface-container-high: #292A2F;
+  --md-sys-color-surface-container-highest: #34343A;
+  --md-sys-color-primary-fixed: #DCE1FF;
+  --md-sys-color-on-primary-fixed: #04164B;
+  --md-sys-color-primary-fixed-dim: #B6C4FF;
+  --md-sys-color-on-primary-fixed-variant: #354479;
+  --md-sys-color-secondary-fixed: #DEE1F9;
+  --md-sys-color-on-secondary-fixed: #161B2C;
+  --md-sys-color-secondary-fixed-dim: #C2C5DD;
+  --md-sys-color-on-secondary-fixed-variant: #424659;
+  --md-sys-color-tertiary-fixed: #FFD7F5;
+  --md-sys-color-on-tertiary-fixed: #2C122A;
+  --md-sys-color-tertiary-fixed-dim: #E3BADA;
+  --md-sys-color-on-tertiary-fixed-variant: #5B3D57;
+
+  /* Dynamic accent scheme defaults (Task 3 overrides these at runtime). */
+  --m3-dynamic-primary: var(--md-sys-color-primary);
+  --m3-dynamic-on-primary: var(--md-sys-color-on-primary);
+  --m3-dynamic-primary-container: var(--md-sys-color-primary-container);
+  --m3-dynamic-on-primary-container: var(--md-sys-color-on-primary-container);
+  --m3-dynamic-secondary-container: var(--md-sys-color-secondary-container);
+  --m3-dynamic-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --m3-dynamic-surface-tint: var(--md-sys-color-primary);
+}
+
+/* ---------------------------------------------------------------- *
+ * LIGHT SCHEME — from values/colors.xml
+ * ---------------------------------------------------------------- */
+:root[data-theme=light] {
+  color-scheme: light;
+
+  --md-sys-color-primary: #4D5C92;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #DCE1FF;
+  --md-sys-color-on-primary-container: #04164B;
+  --md-sys-color-secondary: #595D72;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #DEE1F9;
+  --md-sys-color-on-secondary-container: #161B2C;
+  --md-sys-color-tertiary: #75546F;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #FFD7F5;
+  --md-sys-color-on-tertiary-container: #2C122A;
+  --md-sys-color-error: #BA1A1A;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #FFDAD6;
+  --md-sys-color-on-error-container: #410002;
+  --md-sys-color-background: #FAF8FF;
+  --md-sys-color-on-background: #1A1B21;
+  --md-sys-color-surface: #FAF8FF;
+  --md-sys-color-on-surface: #1A1B21;
+  --md-sys-color-surface-variant: #E2E1EC;
+  --md-sys-color-on-surface-variant: #45464F;
+  --md-sys-color-outline: #767680;
+  --md-sys-color-outline-variant: #C6C5D0;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-inverse-surface: #2F3036;
+  --md-sys-color-inverse-on-surface: #F1F0F7;
+  --md-sys-color-inverse-primary: #B6C4FF;
+  --md-sys-color-surface-dim: #DAD9E0;
+  --md-sys-color-surface-bright: #FAF8FF;
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #F4F3FA;
+  --md-sys-color-surface-container: #EFEDF4;
+  --md-sys-color-surface-container-high: #E9E7EF;
+  --md-sys-color-surface-container-highest: #E3E1E9;
+  /* fixed roles are identical in both schemes on Android */
+  --md-sys-color-primary-fixed: #DCE1FF;
+  --md-sys-color-on-primary-fixed: #04164B;
+  --md-sys-color-primary-fixed-dim: #B6C4FF;
+  --md-sys-color-on-primary-fixed-variant: #354479;
+  --md-sys-color-secondary-fixed: #DEE1F9;
+  --md-sys-color-on-secondary-fixed: #161B2C;
+  --md-sys-color-secondary-fixed-dim: #C2C5DD;
+  --md-sys-color-on-secondary-fixed-variant: #424659;
+  --md-sys-color-tertiary-fixed: #FFD7F5;
+  --md-sys-color-on-tertiary-fixed: #2C122A;
+  --md-sys-color-tertiary-fixed-dim: #E3BADA;
+  --md-sys-color-on-tertiary-fixed-variant: #5B3D57;
+
+  --m3-dynamic-primary: var(--md-sys-color-primary);
+  --m3-dynamic-on-primary: var(--md-sys-color-on-primary);
+  --m3-dynamic-primary-container: var(--md-sys-color-primary-container);
+  --m3-dynamic-on-primary-container: var(--md-sys-color-on-primary-container);
+  --m3-dynamic-secondary-container: var(--md-sys-color-secondary-container);
+  --m3-dynamic-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --m3-dynamic-surface-tint: var(--md-sys-color-primary);
+}
+
+/* ---------------------------------------------------------------- *
+ * Application aliases (`--md-primary` etc.)
+ * ---------------------------------------------------------------- */
+:root {
+  --md-primary: var(--m3-dynamic-primary, var(--md-sys-color-primary));
+  --md-on-primary: var(--m3-dynamic-on-primary, var(--md-sys-color-on-primary));
+  --md-primary-container: var(--m3-dynamic-primary-container, var(--md-sys-color-primary-container));
+  --md-on-primary-container: var(--m3-dynamic-on-primary-container, var(--md-sys-color-on-primary-container));
+  --md-secondary: var(--md-sys-color-secondary);
+  --md-on-secondary: var(--md-sys-color-on-secondary);
+  --md-secondary-container: var(--m3-dynamic-secondary-container, var(--md-sys-color-secondary-container));
+  --md-on-secondary-container: var(--m3-dynamic-on-secondary-container, var(--md-sys-color-on-secondary-container));
+  --md-tertiary: var(--md-sys-color-tertiary);
+  --md-on-tertiary: var(--md-sys-color-on-tertiary);
+  --md-tertiary-container: var(--md-sys-color-tertiary-container);
+  --md-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --md-error: var(--md-sys-color-error);
+  --md-on-error: var(--md-sys-color-on-error);
+  --md-error-container: var(--md-sys-color-error-container);
+  --md-on-error-container: var(--md-sys-color-on-error-container);
+  --md-surface: var(--md-sys-color-surface);
+  --md-on-surface: var(--md-sys-color-on-surface);
+  --md-surface-variant: var(--md-sys-color-surface-variant);
+  --md-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --md-outline: var(--md-sys-color-outline);
+  --md-outline-variant: var(--md-sys-color-outline-variant);
+  --md-inverse-surface: var(--md-sys-color-inverse-surface);
+  --md-inverse-on-surface: var(--md-sys-color-inverse-on-surface);
+  --md-inverse-primary: var(--md-sys-color-inverse-primary);
+  --md-scrim: var(--md-sys-color-scrim);
+}
+
+/* ---------------------------------------------------------------- *
+ * Shape tokens (M3 corner scale; bottom sheets/cards modeled on the
+ * Android app: modal sheets 28, cards 16-24, chips/small 8)
+ * ---------------------------------------------------------------- */
+:root {
+  --md-shape-corner-none: 0px;
+  --md-shape-corner-extra-small: 4px;
+  --md-shape-corner-small: 8px;
+  --md-shape-corner-medium: 12px;
+  --md-shape-corner-large: 16px;
+  --md-shape-corner-extra-large: 28px;
+  --md-shape-corner-full: 9999px;
+}
+
+/* ---------------------------------------------------------------- *
+ * Motion tokens (M3 durations + easings)
+ * ---------------------------------------------------------------- */
+:root {
+  --md-motion-duration-short1: 50ms;
+  --md-motion-duration-short2: 100ms;
+  --md-motion-duration-short3: 150ms;
+  --md-motion-duration-short4: 200ms;
+  --md-motion-duration-medium1: 250ms;
+  --md-motion-duration-medium2: 300ms;
+  --md-motion-duration-medium4: 350ms;
+  --md-motion-duration-medium6: 400ms;
+  --md-motion-duration-medium8: 500ms;
+  --md-motion-duration-long2: 700ms;
+  --md-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --md-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --md-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+}
+
+/* Default elevation overlay color source for scrim/shadow composition. */
+:root {
+  --md-sys-color-shadow: #000000;
+}
+
+/* ---------------------------------------------------------------- *
+ * Reference typefaces — single point where the type scale resolves its
+ * fonts (md-typescale-styles reads `--md-ref-typeface-*`).
+ * ---------------------------------------------------------------- */
+:root {
+  --md-ref-typeface-plain: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --md-ref-typeface-brand: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --md-ref-typeface-weight-regular: 400;
+  --md-ref-typeface-weight-medium: 500;
+  --md-ref-typeface-weight-bold: 700;
+}
+
+/* ---------------------------------------------------------------- *
+ * @material/web component wiring — drives every default away from the
+ * stock purple/gray look onto the Booming roles above.
+ * ---------------------------------------------------------------- */
+:root {
+  /* Slider: thick rounded track + thin pill bar thumb (Booming player look). */
+  --md-slider-active-track-color: var(--md-sys-color-primary-fixed);
+  --md-slider-inactive-track-color: var(--md-sys-color-surface-container-highest);
+  --md-slider-active-track-height: 10px;
+  --md-slider-inactive-track-height: 10px;
+  --md-slider-active-track-shape: var(--md-shape-corner-full);
+  --md-slider-inactive-track-shape: var(--md-shape-corner-full);
+  --md-slider-handle-color: var(--md-sys-color-primary-fixed);
+  --md-slider-focus-handle-color: var(--md-sys-color-primary-fixed);
+  --md-slider-hover-handle-color: var(--md-sys-color-primary-fixed);
+  --md-slider-pressed-handle-color: var(--md-sys-color-primary-fixed);
+  --md-slider-handle-width: 6px;
+  --md-slider-handle-height: 28px;
+  --md-slider-handle-shape: var(--md-shape-corner-full);
+  --md-slider-handle-elevation-level: 0;
+  --md-slider-with-overlap-handle-outline-color: var(--md-sys-color-surface);
+  --md-slider-label-container-color: var(--md-sys-color-primary);
+  --md-slider-label-text-color: var(--md-sys-color-on-primary);
+
+  /* Switch */
+  --md-switch-selected-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-hover-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-focus-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-pressed-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-handle-color: var(--md-sys-color-on-primary);
+  --md-switch-selected-icon-color: var(--md-sys-color-primary);
+  --md-switch-disabled-selected-track-color: var(--md-sys-color-surface-variant);
+  --md-switch-track-outline-color: var(--md-sys-color-outline);
+
+  /* FAB / big play button */
+  --md-fab-container-color: var(--m3-dynamic-primary-container, var(--md-sys-color-primary));
+  --md-fab-icon-color: var(--m3-dynamic-on-primary, var(--md-sys-color-on-primary));
+  --md-fab-hover-container-color: var(--m3-dynamic-primary-container, var(--md-sys-color-primary));
+  --md-fab-focus-container-color: var(--m3-dynamic-primary-container, var(--md-sys-color-primary));
+  --md-fab-pressed-container-color: var(--m3-dynamic-primary-container, var(--md-sys-color-primary));
+  --md-fab-lower-container-color: var(--m3-dynamic-primary-container, var(--md-sys-color-primary));
+  --md-fab-container-shape: var(--md-shape-corner-large);
+
+  /* Icon buttons (player controls read on-surface; selected accent) */
+  --md-icon-button-selected-icon-color: var(--md-sys-color-primary);
+  --md-icon-button-selected-focus-icon-color: var(--md-sys-color-primary);
+  --md-icon-button-selected-hover-icon-color: var(--md-sys-color-primary);
+  --md-icon-button-selected-pressed-icon-color: var(--md-sys-color-primary);
+  --md-icon-button-filled-icon-color: var(--md-sys-color-on-secondary-container);
+  --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
+
+  /* Dialogs (M3 large corners + high container) */
+  --md-dialog-container-color: var(--md-sys-color-surface-container-high);
+  --md-dialog-headline-color: var(--md-sys-color-on-surface);
+  --md-dialog-supporting-text-color: var(--md-sys-color-on-surface-variant);
+
+  /* Bottom sheet + scrim */
+  --md-dialog-scrim-color: var(--md-sys-color-scrim);
+  --md-dialog-scrim-opacity: 0.48;
+
+  /* Text fields (lyrics editor / settings inputs) */
+  --md-filled-text-field-container-color: var(--md-sys-color-surface-container-highest);
+  --md-outlined-text-field-container-color: transparent;
+  --md-outlined-text-field-outline-color: var(--md-sys-color-outline);
+
+  /* Buttons */
+  --md-filled-button-container-color: var(--md-sys-color-primary);
+  --md-filled-button-icon-color: var(--md-sys-color-on-primary);
+  --md-filled-tonal-button-container-color: var(--md-sys-color-secondary-container);
+  --md-filled-tonal-button-icon-color: var(--md-sys-color-on-secondary-container);
+  --md-outlined-button-outline-color: var(--md-sys-color-outline);
+  --md-text-button-icon-color: var(--md-sys-color-primary);
+  --md-elevated-button-container-color: var(--md-sys-color-surface-container-low);
+
+  /* Linear progress (scan progress) */
+  --md-linear-progress-active-indicator-color: var(--md-sys-color-primary);
+  --md-linear-progress-track-color: var(--md-sys-color-surface-container-highest);
+
+  /* List */
+  --md-list-container-color: transparent;
+}

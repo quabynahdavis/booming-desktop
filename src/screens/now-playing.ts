@@ -4,18 +4,7 @@ import { parseLrc } from "../lyrics/lrc.js";
 import { fetchLyrics } from "../lyrics/providers.js";
 import { createLyricsView } from "../lyrics/lyrics-view.js";
 import type { LyricsView } from "../lyrics/lyrics-view.js";
-
-const FALLBACK_COVER =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\">" +
-      "<defs><linearGradient id=\"g\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">" +
-      "<stop offset=\"0\" stop-color=\"#7c3aed\"/><stop offset=\"1\" stop-color=\"#06b6d4\"/>" +
-      "</linearGradient></defs>" +
-      "<rect width=\"64\" height=\"64\" fill=\"url(#g)\"/>" +
-      "<text x=\"32\" y=\"38\" fill=\"#fff\" font-size=\"26\" text-anchor=\"middle\" font-family=\"system-ui\">&#x266B;</text>" +
-    "</svg>"
-  );
+import { FALLBACK_COVER } from "../theme/fallback-cover.js";
 
 interface PlaybackState {
   state: 'playing' | 'paused' | 'stopped';
@@ -50,7 +39,7 @@ export function nowPlayingScreen() {
   coverWrapper.style.height = '320px';
   coverWrapper.style.borderRadius = '24px';
   coverWrapper.style.overflow = 'hidden';
-  coverWrapper.style.background = 'linear-gradient(135deg,#7c3aed,#06b6d4)';
+  coverWrapper.style.background = 'var(--md-sys-color-primary-container)';
   coverWrapper.style.display = 'flex';
   coverWrapper.style.alignItems = 'center';
   coverWrapper.style.justifyContent = 'center';
@@ -65,8 +54,7 @@ export function nowPlayingScreen() {
   // metadata
   const meta = document.createElement('div');
   meta.style.textAlign = 'center';
-  meta.style.color = 'white';
-  meta.style.textShadow = '0 2px 8px rgba(0,0,0,0.5)';
+  meta.style.color = 'var(--md-sys-color-on-surface)';
 
   const titleEl = document.createElement('div');
   titleEl.style.fontSize = '28px';
@@ -153,7 +141,7 @@ export function nowPlayingScreen() {
   bottomBar.style.alignItems = 'center';
   bottomBar.style.gap = '16px';
   bottomBar.style.padding = '12px';
-  bottomBar.style.background = 'rgba(0,0,0,0.2)';
+  bottomBar.style.background = 'var(--md-sys-color-surface-container)';
   bottomBar.style.borderRadius = '16px';
 
   const volumeSlider = document.createElement('md-slider');
@@ -323,13 +311,13 @@ export function nowPlayingScreen() {
   const editContent = document.createElement('div');
   editContent.style.cssText = 'display:flex;flex-direction:column;gap:8px;min-width:560px;';
   const editBar = document.createElement('div');
-  editBar.style.cssText = 'font-size:12px;color:var(--text-muted);';
+  editBar.style.cssText = 'font-size:12px;color:var(--md-sys-color-on-surface-variant);';
   const editArea = document.createElement('textarea');
   editArea.rows = 16;
   editArea.spellcheck = false;
   editArea.style.cssText =
     'width:100%;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;' +
-    'background:var(--panel,#171a21);color:var(--text,#e5e7eb);border:1px solid var(--border,#262b36);' +
+    'background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);' +
     'border-radius:10px;padding:10px;resize:vertical;';
   editContent.append(editBar, editArea);
   const editActions = document.createElement('div');
@@ -426,7 +414,7 @@ export function nowPlayingScreen() {
     try {
       shuffle = !shuffle;
       await invoke('set_shuffle', { enabled: shuffle });
-      shuffleBtn.style.color = shuffle ? 'var(--md-sys-color-primary)' : '';
+      shuffleBtn.style.color = shuffle ? 'var(--md-primary)' : '';
     } catch {}
   });
   repeatBtn.addEventListener('click', async () => {
@@ -434,7 +422,7 @@ export function nowPlayingScreen() {
       repeatMode = repeatMode === 'none' ? 'one' : repeatMode === 'one' ? 'all' : 'none';
       const modeMap = { none: 'None', one: 'One', all: 'All' } as const;
       await invoke('set_repeat_mode', { mode: modeMap[repeatMode] });
-      repeatBtn.style.color = repeatMode !== 'none' ? 'var(--md-sys-color-primary)' : '';
+      repeatBtn.style.color = repeatMode !== 'none' ? 'var(--md-primary)' : '';
       repeatBtn.innerHTML = `<md-icon>${repeatMode === 'one' ? 'repeat_one' : 'repeat'}</md-icon>`;
     } catch {}
   });
@@ -544,7 +532,7 @@ export function nowPlayingScreen() {
   lyricsBtn.addEventListener('click', () => {
     lyricsOpen = !lyricsOpen;
     lyricsWrap.style.display = lyricsOpen ? 'flex' : 'none';
-    lyricsBtn.style.color = lyricsOpen ? 'var(--md-sys-color-primary, var(--accent-a))' : '';
+    lyricsBtn.style.color = lyricsOpen ? 'var(--md-primary, var(--md-sys-color-primary))' : '';
   });
 
   // poll

@@ -17,7 +17,7 @@ export function recentlyPlayedScreen() {
       const div = document.createElement('div');
       div.style.padding = '8px 12px';
       div.style.cursor = 'pointer';
-      div.style.borderBottom = '1px solid var(--border)';
+      div.style.borderBottom = '1px solid var(--md-sys-color-outline-variant)';
       div.textContent = `${s.title ?? 'Unknown'} — ${s.artist ?? ''} • ${s.album ?? ''}`;
       div.addEventListener('click', async () => {
         try { await invoke('play_song', { songId: s.id }); } catch {}

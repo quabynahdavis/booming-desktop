@@ -1,5 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import "./styles.css";
+import "./theme/tokens.css";
+import "@material/web/typography/md-typescale-styles.js";
+import { FALLBACK_COVER } from "./theme/fallback-cover.js";
 import { Router } from "./router.js";
 import { songsScreen } from "./screens/songs.js";
 import { albumsScreen } from "./screens/albums.js";
@@ -22,18 +25,6 @@ Router.register("now-playing", nowPlayingScreen);
 Router.register("settings", settingsScreen);
 
 Router.init();
-
-const FALLBACK_COVER =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\">" +
-      "<defs><linearGradient id=\"g\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">" +
-      "<stop offset=\"0\" stop-color=\"#7c3aed\"/><stop offset=\"1\" stop-color=\"#06b6d4\"/>" +
-      "</linearGradient></defs>" +
-      "<rect width=\"64\" height=\"64\" fill=\"url(#g)\"/>" +
-      "<text x=\"32\" y=\"38\" fill=\"#fff\" font-size=\"26\" text-anchor=\"middle\" font-family=\"system-ui\">&#x266B;</text>" +
-    "</svg>"
-  );
 
 interface Song {
   id: number;
