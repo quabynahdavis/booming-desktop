@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Router } from "../router.js";
+import type { MdDialog } from '@material/web/dialog/dialog.js';
 
 const FALLBACK_COVER =
   "data:image/svg+xml;utf8," +
@@ -153,13 +153,6 @@ export function nowPlayingScreen() {
   balanceSlider.setAttribute('value', '0');
   balanceSlider.style.width = '120px';
 
-  const speedSeg = document.createElement('md-segmented-button');
-  speedSeg.style.display = 'flex';
-  ['0.5x','0.75x','1.0x','1.25x','1.5x'].forEach(v => {
-    const btn = document.createElement('md-segmented-button');
-    // Actually use button inside? Simplify: use md-text-button
-  });
-  // Simpler: use a select of md-text-button with data-speed
   const speedWrap = document.createElement('div');
   speedWrap.style.display = 'flex';
   speedWrap.style.gap = '4px';
@@ -181,7 +174,7 @@ export function nowPlayingScreen() {
   bottomBar.appendChild(timerBtn);
 
   // sleep timer dialog
-  const dialog = document.createElement('md-dialog');
+  const dialog = document.createElement('md-dialog') as MdDialog;
   dialog.id = 'sleep-timer-dialog';
   const dialogTitle = document.createElement('div');
   dialogTitle.slot = 'headline';
@@ -275,10 +268,8 @@ export function nowPlayingScreen() {
   });
 
   // volume / balance / speed
-  let volumeUpdating = false;
   volumeSlider.addEventListener('input', () => {
     const v = Number((volumeSlider as any).value) / 100;
-    volumeUpdating = true;
     invoke('set_volume', { vol: v }).catch(() => {});
   });
   balanceSlider.addEventListener('input', () => {

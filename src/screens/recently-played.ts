@@ -1,9 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import { screenContainer } from "./common.js";
 
 export function recentlyPlayedScreen() {
-  const list = document.createElement('div');
-  list.className = 'screen-container';
   const container = document.createElement('div');
   container.className = 'screen-container';
   const header = document.createElement('div');
