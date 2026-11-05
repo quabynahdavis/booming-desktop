@@ -342,4 +342,17 @@ mod tests {
         assert_eq!(*service.current_song_id.lock().unwrap(), None);
         assert_eq!(*service.replay_gain_mode.lock().unwrap(), GainMode::Off);
     }
+
+    #[test]
+    fn volume_clamps_to_range() {
+        let engine = Arc::new(Mutex::new(Box::new(NullEngine::new()) as Box<dyn crate::engine::Engine>));
+        let service = PlaybackService::new(engine);
+        // Test clamping
+        service.set_volume(1.5);
+        assert!((service.get_volume() - 1.0).abs() < 0.001);
+        service.set_volume(-0.5);
+        assert!((service.get_volume() - 0.0).abs() < 0.001);
+        service.set_volume(0.75);
+        assert!((service.get_volume() - 0.75).abs() < 0.001);
+    }
 }
