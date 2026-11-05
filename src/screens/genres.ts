@@ -4,7 +4,7 @@ import { screenContainer, grid, card } from "./common.js";
 export function genresScreen() {
   const gridEl = grid();
   const container = screenContainer('Genres', gridEl);
-  invoke('list_genres', { sort: 'title', page: 0, page_size: 50 })
+  invoke('list_genres', { sort: 'title', page: 0, pageSize: 50 })
     .then((genres: any) => {
       gridEl.innerHTML = '';
       for (const g of genres as any[]) {

@@ -27,7 +27,7 @@ export function detailScreen(params: RouteParams) {
         row.style.borderBottom = '1px solid var(--border)';
         row.textContent = `${s.track ? s.track + '. ' : ''}${s.title ?? 'Unknown'} — ${s.artist ?? ''}`;
         row.addEventListener('click', async () => {
-          try { await invoke('play_song', { song_id: s.id }); } catch {}
+          try { await invoke('play_song', { songId: s.id }); } catch {}
         });
         list.appendChild(row);
       }

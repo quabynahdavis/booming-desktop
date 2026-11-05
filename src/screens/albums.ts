@@ -5,7 +5,7 @@ import { Router } from "../router.js";
 export function albumsScreen() {
   const gridEl = grid();
   const container = screenContainer('Albums', gridEl);
-  invoke('list_albums', { sort: 'title', page: 0, page_size: 50 })
+  invoke('list_albums', { sort: 'title', page: 0, pageSize: 50 })
     .then((albums: any) => {
       gridEl.innerHTML = '';
       for (const a of albums as any[]) {

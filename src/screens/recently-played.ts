@@ -20,7 +20,7 @@ export function recentlyPlayedScreen() {
       div.style.borderBottom = '1px solid var(--border)';
       div.textContent = `${s.title ?? 'Unknown'} — ${s.artist ?? ''} • ${s.album ?? ''}`;
       div.addEventListener('click', async () => {
-        try { await invoke('play_song', { song_id: s.id }); } catch {}
+        try { await invoke('play_song', { songId: s.id }); } catch {}
       });
       grid.appendChild(div);
     }

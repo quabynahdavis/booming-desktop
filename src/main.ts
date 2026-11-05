@@ -120,7 +120,7 @@ async function pollState() {
       if (lastSongId !== state.current_song_id) {
         lastSongId = state.current_song_id;
         try {
-          const dataUrl = await invoke<string | null>('get_cover_data_url', { song_id: state.current_song_id });
+          const dataUrl = await invoke<string | null>('get_cover_data_url', { songId: state.current_song_id });
           coverEl.src = dataUrl || FALLBACK_COVER;
         } catch {
           coverEl.src = FALLBACK_COVER;

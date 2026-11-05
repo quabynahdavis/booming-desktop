@@ -5,7 +5,7 @@ import { Router } from "../router.js";
 export function artistsScreen() {
   const gridEl = grid();
   const container = screenContainer('Artists', gridEl);
-  invoke('list_artists', { sort: 'artist', page: 0, page_size: 50 })
+  invoke('list_artists', { sort: 'artist', page: 0, pageSize: 50 })
     .then((artists: any) => {
       gridEl.innerHTML = '';
       for (const a of artists as any[]) {

@@ -394,7 +394,7 @@ export function nowPlayingScreen() {
       if (state.current_song_id && state.current_song_id !== lastSongId) {
         lastSongId = state.current_song_id;
         try {
-          const dataUrl = await invoke<string | null>('get_cover_data_url', { song_id: state.current_song_id });
+          const dataUrl = await invoke<string | null>('get_cover_data_url', { songId: state.current_song_id });
           coverImg.src = dataUrl || FALLBACK_COVER;
         } catch {
           coverImg.src = FALLBACK_COVER;
