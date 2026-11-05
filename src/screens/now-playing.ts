@@ -1,5 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { MdDialog } from '@material/web/dialog/dialog.js';
+import { parseLrc } from "../lyrics/lrc.js";
+import { fetchLyrics } from "../lyrics/providers.js";
+import { createLyricsView } from "../lyrics/lyrics-view.js";
+import type { LyricsView } from "../lyrics/lyrics-view.js";
 
 const FALLBACK_COVER =
   "data:image/svg+xml;utf8," +
@@ -18,19 +22,26 @@ interface PlaybackState {
   position: number;
   duration: number;
   current_song_id?: number;
-  current_song?: { title?: string; artist?: string; album?: string };
+  current_song?: { title?: string; artist?: string; album?: string; duration?: number };
   queue: number[];
 }
-
 export function nowPlayingScreen() {
   const container = document.createElement('div');
   container.className = 'screen-container now-playing';
   container.style.display = 'flex';
   container.style.flexDirection = 'column';
-  container.style.alignItems = 'center';
   container.style.padding = '32px';
   container.style.gap = '24px';
-  container.style.minHeight = '60vh';
+
+  // Two-column layout: main playback column + (hidden until toggled) lyrics pane
+  const layout = document.createElement('div');
+  layout.style.cssText = 'display:flex;gap:32px;flex:1;align-self:center;width:100%;max-width:1100px;';
+
+  const mainCol = document.createElement('div');
+  mainCol.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:24px;flex:1;min-height:60vh;';
+
+  const lyricsWrap = document.createElement('div');
+  lyricsWrap.style.cssText = 'display:none;flex-direction:column;min-width:320px;max-width:460px;flex:0.8;';
 
   // cover art
   const coverWrapper = document.createElement('div');
@@ -126,7 +137,12 @@ export function nowPlayingScreen() {
   repeatBtn.setAttribute('aria-label', 'repeat');
   repeatBtn.innerHTML = '<md-icon>repeat</md-icon>';
 
-  controls.append(shuffleBtn, prevBtn, playBtn, nextBtn, repeatBtn);
+  const lyricsBtn = document.createElement('md-icon-button');
+  lyricsBtn.setAttribute('aria-label', 'lyrics');
+  lyricsBtn.setAttribute('title', 'Lyrics');
+  lyricsBtn.innerHTML = '<md-icon>lyrics</md-icon>';
+
+  controls.append(shuffleBtn, prevBtn, playBtn, nextBtn, repeatBtn, lyricsBtn);
 
   // bottom bar for volume etc (placeholder)
   const bottomBar = document.createElement('div');
@@ -195,13 +211,59 @@ export function nowPlayingScreen() {
   const dialogActions = document.createElement('div');
   dialogActions.slot = 'actions';
   dialog.append(dialogTitle, dialogContent);
-  container.append(coverWrapper, meta, progressRow, controls, bottomBar, dialog);
+
+  // lyrics pane (created below, wired here so it exists for the layout row)
+  const lyricsView: LyricsView = createLyricsView((timeMs) => {
+    invoke('seek_playback', { secs: timeMs / 1000 }).catch(() => {});
+  });
+  lyricsWrap.appendChild(lyricsView.el);
+  layout.append(mainCol, lyricsWrap);
+  container.append(layout, dialog);
 
   // state
   let lastSongId: number | null = null;
   let currentDuration = 0;
   let repeatMode: 'none' | 'one' | 'all' = 'none';
   let shuffle = false;
+
+  // lyrics state
+  let lyricsLoadToken = 0;
+  async function loadLyrics(song: { title?: string; artist?: string; album?: string; duration?: number } | undefined, fallbackDuration: number) {
+    const token = ++lyricsLoadToken;
+    lyricsView.setHeader(song?.title ?? null, song?.artist ?? null);
+    if (!song?.title || !song?.artist) {
+      lyricsView.setLyrics(null, null, null);
+      lyricsView.setStatus('No track playing');
+      return;
+    }
+    lyricsView.setLyrics(null, null, null);
+    lyricsView.setStatus('Loading lyrics…');
+    const durationSecs = song.duration || (fallbackDuration > 0 ? fallbackDuration : null);
+    let res: Awaited<ReturnType<typeof fetchLyrics>> | null = null;
+    try {
+      res = await fetchLyrics({ artist: song.artist, title: song.title, album: song.album ?? null, durationSecs });
+    } catch {
+      res = null;
+    }
+    if (token !== lyricsLoadToken) return; // a newer load superseded this one
+    if (!res || !res.found) {
+      lyricsView.setLyrics(null, null, null);
+      lyricsView.setStatus('No lyrics found');
+      return;
+    }
+    if (res.instrumental) {
+      lyricsView.setLyrics(null, null, null);
+      lyricsView.setStatus('Instrumental track — no lyrics');
+      return;
+    }
+    if (res.syncedLyrics) {
+      lyricsView.setLyrics(parseLrc(res.syncedLyrics), null, 'LRCLIB');
+      lyricsView.setStatus(null);
+    } else {
+      lyricsView.setLyrics(null, res.plainLyrics, 'LRCLIB (plain)');
+      lyricsView.setStatus(null);
+    }
+  }
 
   async function updateState() {
     try {
@@ -229,7 +291,9 @@ export function nowPlayingScreen() {
         } catch {
           coverImg.src = FALLBACK_COVER;
         }
+        void loadLyrics(state.current_song, state.duration);
       }
+      lyricsView.update(state.position);
     } catch {}
   }
 
@@ -365,6 +429,14 @@ export function nowPlayingScreen() {
     btn.addEventListener('click', () => {
       minutesField.value = btn.getAttribute('data-preset') || '30';
     });
+  });
+
+  // lyrics pane toggle
+  let lyricsOpen = false;
+  lyricsBtn.addEventListener('click', () => {
+    lyricsOpen = !lyricsOpen;
+    lyricsWrap.style.display = lyricsOpen ? 'flex' : 'none';
+    lyricsBtn.style.color = lyricsOpen ? 'var(--md-sys-color-primary, var(--accent-a))' : '';
   });
 
   // poll
