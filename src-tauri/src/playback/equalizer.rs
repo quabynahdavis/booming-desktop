@@ -73,25 +73,22 @@ impl EqualizerManager {
 
 /// Persist equalizer state to a JSON settings file.
 /// The caller must ensure `settings_dir` points to the app's config directory.
-pub fn persist_eq_settings<P: AsPath>(settings_dir: P, eq: &EqualizerManager) -> Result<(), String> {
-    let path = settings_dir.as_path().join("equalizer.json");
+pub fn persist_eq_settings<P: AsRef<std::path::Path>>(settings_dir: P, eq: &EqualizerManager) -> Result<(), String> {
+    let path = settings_dir.as_ref().join("equalizer.json");
     let json = serde_json::to_string(eq).map_err(|e| format!("serialize error: {}", e))?;
     std::fs::write(&path, json).map_err(|e| format!("write error: {}", e))?;
     Ok(())
 }
 
 /// Load equalizer state from the JSON settings file.
-pub fn load_eq_settings<P: AsPath>(settings_dir: P) -> Result<EqualizerManager, String> {
-    let path = settings_dir.as_path().join("equalizer.json");
+pub fn load_eq_settings<P: AsRef<std::path::Path>>(settings_dir: P) -> Result<EqualizerManager, String> {
+    let path = settings_dir.as_ref().join("equalizer.json");
     if !path.exists() {
         return Ok(EqualizerManager::new());
     }
     let content = std::fs::read_to_string(&path).map_err(|e| format!("read error: {}", e))?;
-    serde_json::from_str(&content).unwrap_or_else(|_| {
-        // fallback to defaults on corruption
-        eprintln!("Corrupt equalizer settings, using defaults");
-        EqualizerManager::new()
-    })
+    let eq: EqualizerManager = serde_json::from_str(&content).map_err(|e| format!("parse error: {}", e))?;
+    Ok(eq)
 }
 
 /// Build the mpv `--af` string that adds the superequalizer filter.
@@ -142,7 +139,7 @@ mod tests {
         // first band should be b1=25:g1=1
         assert!(filter.starts_with("b1=25:g1=1|"));
         // last band should be b16=16k:g16=15
-        assert!(filter.ends_with("b16=16000:g16=15"));
+        assert!(filter.ends_with("b15=16000:g15=15"));
         // count pipes +1 = 15 bands
         let bands: Vec<&str> = filter.split('|').collect();
         assert_eq!(bands.len(), 15);

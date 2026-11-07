@@ -10,7 +10,6 @@ use tauri::AppHandle;
 
 use crate::engine::{EngineError, PlaybackState, SharedEngine};
 use crate::library::db::Db;
-use crate::library::settings::Settings;
 use crate::playback::replaygain::{ReplayGainManager};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -328,6 +327,93 @@ impl PlaybackService {
 
     pub fn get_speed(&self) -> f64 {
         *self.speed.lock().unwrap()
+    }
+
+    pub fn get_eq_state(&self) -> (bool, [f32; 15]) {
+        (
+            *self.eq_enabled.lock().unwrap(),
+            *self.eq_bands.lock().unwrap(),
+        )
+    }
+
+    /// Set equalizer enabled state and apply/clear filter.
+    pub fn set_eq_enabled(&self, enabled: bool) -> Result<(), EngineError> {
+        *self.eq_enabled.lock().unwrap() = enabled;
+        let engine = self.engine.lock().unwrap();
+        if enabled {
+            let bands = *self.eq_bands.lock().unwrap();
+            let eq = EqualizerManager {
+                enabled: true,
+                bands,
+                preset: None,
+            };
+            let filter = build_mpv_superequalizer(&eq);
+            engine.set_audio_filter(filter)?;
+        } else {
+            engine.set_audio_filter("".into())?;
+        }
+        Ok(())
+    }
+
+    /// Set a single band's gain (in dB). Clamped to [-15, +15].
+    pub fn set_eq_band(&self, index: usize, value: f32) -> Result<(), EngineError> {
+        if index >= 15 {
+            return Err(EngineError::Backend("band index out of range".into()));
+        }
+        let clamped = value.max(-15.0).min(15.0);
+        {
+            let mut bands = self.eq_bands.lock().unwrap();
+            bands[index] = clamped;
+        }
+        if *self.eq_enabled.lock().unwrap() {
+            let bands = *self.eq_bands.lock().unwrap();
+            let eq = EqualizerManager {
+                enabled: true,
+                bands,
+                preset: None,
+            };
+            let filter = build_mpv_superequalizer(&eq);
+            let engine = self.engine.lock().unwrap();
+            engine.set_audio_filter(filter)?;
+        }
+        Ok(())
+    }
+
+    /// Set all 15 bands at once.
+    pub fn set_eq_bands(&self, new_bands: [f32; 15]) -> Result<(), EngineError> {
+        let clamped: [f32; 15] = new_bands.map(|v| v.max(-15.0).min(15.0));
+        *self.eq_bands.lock().unwrap() = clamped;
+        if *self.eq_enabled.lock().unwrap() {
+            let bands = clamped;
+            let eq = EqualizerManager {
+                enabled: true,
+                bands,
+                preset: None,
+            };
+            let filter = build_mpv_superequalizer(&eq);
+            let engine = self.engine.lock().unwrap();
+            engine.set_audio_filter(filter)?;
+        }
+        Ok(())
+    }
+
+    /// Load a built-in preset by name.
+    pub fn load_eq_preset(&self, name: &str) -> Result<(), EngineError> {
+        let mut manager = EqualizerManager::new();
+        manager.load_preset(name).map_err(|e| EngineError::Backend(e))?;
+        let bands = manager.bands;
+        *self.eq_bands.lock().unwrap() = bands;
+        if *self.eq_enabled.lock().unwrap() {
+            let eq = EqualizerManager {
+                enabled: true,
+                bands,
+                preset: Some(name.to_string()),
+            };
+            let filter = build_mpv_superequalizer(&eq);
+            let engine = self.engine.lock().unwrap();
+            engine.set_audio_filter(filter)?;
+        }
+        Ok(())
     }
 }
 

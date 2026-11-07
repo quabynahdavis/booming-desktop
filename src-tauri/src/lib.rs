@@ -74,7 +74,13 @@ pub fn run() {
             commands::parse_lrc,
             commands::save_lrc_sidecar,
             commands::load_lrc_sidecar,
-            commands::delete_lrc_sidecar
+            commands::delete_lrc_sidecar,
+            commands::get_eq_state,
+            commands::set_eq_enabled,
+            commands::set_eq_band,
+            commands::set_eq_bands,
+            commands::load_eq_preset,
+            commands::import_autoeq,
         ])
         .setup(|app| {
             // set app handle for events

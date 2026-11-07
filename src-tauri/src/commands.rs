@@ -156,11 +156,63 @@ pub(crate) async fn export_m3u(app: AppHandle, playlist_id: i64, out_path: Strin
     Ok(())
 }
 
+use serde_json;
+
 #[tauri::command]
 pub(crate) async fn get_playback_state(app: AppHandle, playback: State<'_, Arc<PlaybackService>>) -> Result<PlaybackStateInfo, String> {
     let db = get_db(&app)?;
     Ok(playback.get_state(&db))
 }
+
+#[tauri::command]
+pub(crate) async fn get_eq_state(playback: State<'_, Arc<PlaybackService>>) -> Result<(bool, [f32; 15]), String> {
+    Ok(playback.get_eq_state())
+}
+
+#[tauri::command]
+pub(crate) async fn set_eq_enabled(playback: State<'_, Arc<PlaybackService>>, enabled: bool) -> Result<(), String> {
+    playback.set_eq_enabled(enabled).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn set_eq_band(playback: State<'_, Arc<PlaybackService>>, band_index: usize, value: f32) -> Result<(), String> {
+    playback.set_eq_band(band_index, value).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn set_eq_bands(playback: State<'_, Arc<PlaybackService>>, bands: [f32; 15]) -> Result<(), String> {
+    playback.set_eq_bands(bands).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn load_eq_preset(playback: State<'_, Arc<PlaybackService>>, name: String) -> Result<(), String> {
+    playback.load_eq_preset(&name).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn import_autoeq(playback: State<'_, Arc<PlaybackService>>, path: String) -> Result<(), String> {
+    let content = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+    let v: serde_json::Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
+    let filters = v.get("parametric_eq").and_then(|v| v.as_array()).ok_or("Missing parametric_eq")?;
+    const CENTERS: [f32; 15] = [25.0,40.0,63.0,100.0,160.0,250.0,400.0,630.0,1000.0,1600.0,2500.0,4000.0,6300.0,10000.0,16000.0];
+    let mut gains = [0.0f32; 15];
+    for (i, &center) in CENTERS.iter().enumerate() {
+        let mut best_gain = 0.0f32;
+        let mut min_diff = f32::MAX;
+        for f in filters {
+            if let Some(fc) = f.get("fc").and_then(|v| v.as_f64()) {
+                let diff = (fc as f32 - center).abs();
+                if diff < min_diff {
+                    min_diff = diff;
+                    best_gain = f.get("gain").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                }
+            }
+        }
+        gains[i] = best_gain;
+    }
+    playback.set_eq_bands(gains).map_err(|e| e.to_string())
+}
+
 
 /// Parse an LRC lyrics text into `{ metadata, lines }` with ms timestamps and
 /// optional word-level (karaoke) timings.
