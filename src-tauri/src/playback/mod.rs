@@ -1,5 +1,7 @@
 pub mod replaygain;
+pub mod equalizer;
 pub use replaygain::GainMode;
+pub use equalizer::{EqualizerManager, build_mpv_superequalizer};
 
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -8,6 +10,7 @@ use tauri::AppHandle;
 
 use crate::engine::{EngineError, PlaybackState, SharedEngine};
 use crate::library::db::Db;
+use crate::library::settings::Settings;
 use crate::playback::replaygain::{ReplayGainManager};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -32,6 +35,8 @@ pub struct PlaybackService {
     volume: Mutex<f64>,
     balance: Mutex<f64>,
     speed: Mutex<f64>,
+    eq_enabled: Mutex<bool>,
+    eq_bands: Mutex<[f32; 15]>,
 }
 
 impl PlaybackService {
@@ -51,6 +56,8 @@ impl PlaybackService {
             volume: Mutex::new(1.0),
             balance: Mutex::new(0.0),
             speed: Mutex::new(1.0),
+            eq_enabled: Mutex::new(false),
+            eq_bands: Mutex::new([0.0; 15]),
         }
     }
 
@@ -84,6 +91,17 @@ impl PlaybackService {
         // load and play
         let engine = self.engine.lock().unwrap();
         engine.load(&path)?;
+        // Apply equalizer filter if enabled
+        let (eq_enabled, eq_bands) = self.get_eq_state();
+        if eq_enabled {
+            let eq = EqualizerManager {
+                enabled: eq_enabled,
+                bands: eq_bands,
+                preset: None,
+            };
+            let filter = build_mpv_superequalizer(&eq);
+            engine.set_audio_filter(filter)?;
+        }
         engine.play()?;
         self.emit_state();
         Ok(())
