@@ -34,31 +34,26 @@ interface Mode {
   lines: LyricLine[];
 }
 
-const ACCENT = "var(--md-primary, var(--md-sys-color-primary))";
-
 export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsView {
   const el = document.createElement("div");
   el.className = "lyrics-pane";
-  el.style.cssText = "display:flex;flex-direction:column;gap:8px;flex:1;min-width:320px;max-width:460px;";
 
   // Header
   const header = document.createElement("div");
-  header.style.cssText = "display:flex;flex-direction:column;gap:2px;min-height:2.2em;padding:0 4px;";
+  header.className = "lyrics-header";
   const titleEl = document.createElement("div");
-  titleEl.style.cssText = "font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);";
+  titleEl.className = "lyrics-title";
   const sourceLine = document.createElement("div");
-  sourceLine.style.cssText = "font-size:12px;color:var(--md-sys-color-on-surface-variant);";
+  sourceLine.className = "lyrics-source";
   header.append(titleEl, sourceLine);
 
   // Status chip ("Loading…", "Instrumental track", errors)
   const statusEl = document.createElement("div");
-  statusEl.style.cssText = "font-size:13px;color:var(--md-sys-color-on-surface-variant);min-height:1.2em;padding:0 4px;";
+  statusEl.className = "lyrics-status";
 
-  // Scrollable lyric body
+  // Scrollable lyric body (transparent surface text, app-like)
   const body = document.createElement("div");
-  body.style.cssText =
-    "flex:1;overflow-y:auto;max-height:66vh;border-radius:16px;padding:24px 14px;" +
-    "background:var(--md-sys-color-surface-container-lowest);scroll-behavior:smooth;";
+  body.className = "lyrics-body";
   el.append(header, body, statusEl);
 
   let mode: Mode = { kind: "empty", lines: [] };
@@ -107,12 +102,8 @@ export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsVie
     if (mode.kind === "synced") {
       mode.lines.forEach((line) => {
         const row = document.createElement("div");
-        row.className = "lyrics-line";
+        row.className = "lyrics-line upcoming";
         row.setAttribute("data-time-ms", String(line.timeMs));
-        row.style.cssText =
-          "padding:6px 4px;font-size:17px;line-height:1.45;cursor:pointer;" +
-          "transition:opacity .25s,color .25s;user-select:none;text-align:left;" +
-          "font-weight:400;color:var(--md-sys-color-on-surface-variant);opacity:0.85;";
         if (line.words?.length) {
           line.words.forEach((word, wi) => {
             // Two-layer per-word fill (works without background-clip:text):
@@ -120,14 +111,10 @@ export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsVie
             // of growing width reveals the word as its timings pass.
             const wrap = document.createElement("span");
             wrap.className = "lyrics-word";
-            wrap.style.cssText = "position:relative;display:inline-block;white-space:pre;";
             const base = document.createElement("span");
             base.textContent = word.word;
             const fill = document.createElement("span");
             fill.className = "lyrics-word-fill";
-            fill.style.cssText =
-              "position:absolute;left:0;top:0;width:0;overflow:hidden;white-space:pre;" +
-              "color:" + ACCENT + ";transition:width .18s linear;";
             fill.textContent = word.word;
             wrap.append(base, fill);
             row.appendChild(wrap);
@@ -145,9 +132,6 @@ export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsVie
     } else if (mode.kind === "plain" && plainRaw) {
       const block = document.createElement("pre");
       block.className = "lyrics-plain";
-      block.style.cssText =
-        "margin:0;white-space:pre-wrap;font-family:inherit;font-size:16px;line-height:1.6;" +
-        "color:var(--md-sys-color-on-surface);cursor:default;";
       block.textContent = plainRaw;
       body.appendChild(block);
       lineEls = [block];
@@ -159,17 +143,11 @@ export function createLyricsView(onSeekMs?: (timeMs: number) => void): LyricsVie
     for (let index = 0; index < lineEls.length; index++) {
       const row = lineEls[index];
       if (index === activeIndex) {
-        row.style.opacity = "1";
-        row.style.fontWeight = "600";
-        row.style.color = "var(--md-sys-color-on-surface)";
+        row.className = "lyrics-line active"; // highlighted + karaoke fill runs in accents
       } else if (index < activeIndex) {
-        row.style.opacity = "0.45"; // lines before the current one are dimmed
-        row.style.fontWeight = "400";
-        row.style.color = "var(--md-sys-color-on-surface-variant)";
+        row.className = "lyrics-line past"; // lines before the current one are dimmed
       } else {
-        row.style.opacity = "0.85"; // upcoming lines are muted
-        row.style.fontWeight = "400";
-        row.style.color = "var(--md-sys-color-on-surface-variant)";
+        row.className = "lyrics-line upcoming"; // upcoming lines stay muted
       }
     }
   }

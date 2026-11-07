@@ -5,6 +5,7 @@
     "": {
       "name": "booming-desktop",
       "dependencies": {
+        "@fontsource/material-symbols-outlined": "5.3.9",
         "@material/material-color-utilities": "^0.4.0",
         "@material/web": "2.5.0",
         "@tauri-apps/api": "^2.12.0",
@@ -17,6 +18,8 @@
     },
   },
   "packages": {
+    "@fontsource/material-symbols-outlined": ["@fontsource/material-symbols-outlined@5.3.9", "", {}, "sha512-rPyajEu+UBQvAN78nnlvIReUtHAdaTMlNsrY5uFqf0eu+B9CYScof7AGy1hjF5jq3xARBGbdG9WVpuOi+nJhuQ=="],
+
     "@lit-labs/ssr-dom-shim": ["@lit-labs/ssr-dom-shim@1.6.0", "", {}, "sha512-VHb0ALPMTlgKjM6yIxxoQNnpKyUKLD04VzeQdsiXkMqkvYlAHxq9glGLmgbb889/1GsohSOAjvQYoiBppXFqrQ=="],
 
     "@lit/context": ["@lit/context@1.1.6", "", { "dependencies": { "@lit/reactive-element": "^1.6.2 || ^2.1.0" } }, "sha512-M26qDE6UkQbZA2mQ3RjJ3Gzd8TxP+/0obMgE5HfkfLhEEyYE3Bui4A5XHiGPjy0MUGAyxB3QgVuw2ciS0kHn6A=="],

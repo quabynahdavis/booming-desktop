@@ -2,6 +2,8 @@
  * Booming Desktop — app styles.
  * All colors come from Material 3 role tokens in ./theme/tokens.css.
  * This file must not contain raw hex/rgba colors (CI gate).
+ *
+ * Visual target: Booming Music Android (assets/screenshots in the app repo).
  */
 
 body {
@@ -20,8 +22,10 @@ body {
   overflow: hidden;
 }
 
-/* Navigation drawer — chrome surface (subtle cover-art tint via
- * --m3-dynamic-chrome-surface; plain surface-container-low by default). */
+/* ---------------------------------------------------------------- *
+ * Navigation drawer — icon + accent selected pill on the tinted
+ * chrome surface (Booming app drawer look).
+ * ---------------------------------------------------------------- */
 #nav-drawer {
   width: 240px;
   min-width: 240px;
@@ -38,16 +42,43 @@ body {
   --md-navigation-drawer-container-color: var(--m3-dynamic-chrome-surface);
 }
 
+#nav-drawer md-list {
+  width: 100%;
+  --md-list-container-color: transparent;
+}
+
 #nav-drawer md-list-item {
   cursor: pointer;
   border-radius: var(--md-shape-corner-full);
   margin: 4px 8px;
+  --md-list-item-container-color: transparent;
+  --md-list-item-leading-icon-color: var(--md-sys-color-on-surface-variant);
+  --md-list-item-leading-space: 16px;
+  --md-list-item-label-text-color: var(--md-sys-color-on-surface);
+  --md-list-item-label-text-size: 0.9rem;
+  --md-list-item-label-text-weight: var(--md-ref-typeface-weight-regular, 400);
+  --md-list-item-label-text-line-height: 1.25rem;
+  --md-list-item-hover-state-layer-color: var(--md-sys-color-on-surface);
+  --md-list-item-hover-state-layer-opacity: 0.08;
 }
 
 #nav-drawer md-list-item[selected] {
-  background: var(--md-sys-color-secondary-container);
-  color: var(--md-sys-color-on-secondary-container);
+  background: var(--md-primary-container);
+  --md-list-item-leading-icon-color: var(--md-on-primary-container);
+  --md-list-item-label-text-color: var(--md-on-primary-container);
+  --md-list-item-label-text-weight: var(--md-ref-typeface-weight-medium, 500);
+  --md-list-item-hover-state-layer-color: var(--md-on-primary-container);
 }
+
+#nav-drawer md-list-item md-icon {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+#nav-drawer md-list-item[selected] md-icon {
+  color: var(--md-on-primary-container);
+}
+
+/* Screen body ---------------------------------------------------------------- */
 
 #app {
   flex: 1;
@@ -70,39 +101,43 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .screen-header h1 {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
+  font: var(--md-font-title-large);
+  font-weight: var(--md-ref-typeface-weight-regular, 400);
   color: var(--md-sys-color-on-surface);
 }
 
+/* ---------------------------------------------------------------- *
+ * Library content grids / lists (Albums, Artists, Genres, Folders…)
+ * ---------------------------------------------------------------- */
 .md-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 16px;
 }
 
 .md-grid md-card,
 .md-grid .md-card-stub {
   background: var(--md-sys-color-surface-container);
-  border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: var(--md-shape-corner-medium);
+  border: none;
+  border-radius: var(--md-shape-corner-large);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   cursor: pointer;
   transition: transform var(--md-motion-duration-short3) var(--md-motion-easing-standard),
-    border-color var(--md-motion-duration-short3) var(--md-motion-easing-standard);
+    background-color var(--md-motion-duration-short3) var(--md-motion-easing-standard),
+    color var(--md-motion-duration-short3) var(--md-motion-easing-standard);
 }
 
 .md-grid md-card:hover,
 .md-grid .md-card-stub:hover {
   transform: translateY(-2px);
-  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-surface-container-high);
 }
 
 .card-thumbnail {
@@ -121,33 +156,76 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .card-content {
-  padding: 12px;
+  padding: 10px 12px 12px;
 }
 
 .card-title {
-  font-weight: 600;
-  font-size: 0.95rem;
+  font: var(--md-font-title-medium);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: var(--md-sys-color-on-surface);
 }
 
 .card-subtitle {
-  font-size: 0.85rem;
+  font: var(--md-font-body-medium);
   color: var(--md-sys-color-on-surface-variant);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Text-only song rows (detail screens / history lists) — flat M3 rows with
+ * a rounded hover state, no separators (Booming app list style). */
+.song-list-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.song-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--md-shape-corner-small);
+  cursor: pointer;
+  font: var(--md-font-body-large);
+  color: var(--md-sys-color-on-surface);
+  transition: background-color var(--md-motion-duration-short3) var(--md-motion-easing-standard);
+}
+
+.song-row:hover {
+  background: var(--md-sys-color-surface-container);
+}
+
+.song-row .song-row-secondary {
+  color: var(--md-sys-color-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.song-row .song-row-count {
+  margin-left: auto;
+  font: var(--md-font-label-large);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.song-row-empty {
+  padding: 16px;
+  font: var(--md-font-body-medium);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 h1 {
   margin: 0 0 4px;
-  font-size: 1.55rem;
+  font: var(--md-font-title-large);
   letter-spacing: 0.01em;
   color: var(--md-sys-color-on-surface);
 }
@@ -155,7 +233,7 @@ h1 {
 .muted {
   margin: 0 0 28px;
   color: var(--md-sys-color-on-surface-variant);
-  font-size: 0.95rem;
+  font: var(--md-font-body-medium);
 }
 
 #check-engine {
@@ -163,10 +241,9 @@ h1 {
   border: 0;
   border-radius: var(--md-shape-corner-full);
   padding: 10px 22px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--md-sys-color-on-primary);
-  background: var(--md-sys-color-primary);
+  font: var(--md-font-label-large);
+  color: var(--md-on-primary);
+  background: var(--md-primary);
   cursor: pointer;
   transition: filter var(--md-motion-duration-short2) var(--md-motion-easing-standard),
     transform var(--md-motion-duration-short1) var(--md-motion-easing-standard);
@@ -191,19 +268,19 @@ h1 {
 
 .summary {
   margin: 0 0 10px;
-  font-weight: 600;
+  font: var(--md-font-title-medium);
 }
 
 .summary.ok {
-  color: var(--md-sys-color-primary);
+  color: var(--md-primary);
 }
 
 .summary.warn {
-  color: var(--md-sys-color-tertiary);
+  color: var(--md-tertiary);
 }
 
 .summary.err {
-  color: var(--md-sys-color-error);
+  color: var(--md-error);
 }
 
 pre {
@@ -213,13 +290,16 @@ pre {
   border-radius: var(--md-shape-corner-small);
   background: var(--md-sys-color-surface-container-low);
   color: var(--md-sys-color-on-surface-variant);
-  font-size: 0.85rem;
+  font: var(--md-font-body-small);
   line-height: 1.5;
   overflow: auto;
   min-height: 2.6em;
 }
 
-/* Sliding player panel — chrome surface (subtle cover-art tint). */
+/* ---------------------------------------------------------------- *
+ * Sliding player panel — 28px top corners, 72px collapsed row,
+ * expanded now-playing (uses the tinted chrome surface).
+ * ---------------------------------------------------------------- */
 .player-panel {
   position: fixed;
   left: 0;
@@ -227,7 +307,7 @@ pre {
   bottom: 0;
   background: var(--m3-dynamic-chrome-surface);
   border-top: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: var(--md-shape-corner-large) var(--md-shape-corner-large) 0 0;
+  border-radius: var(--md-shape-corner-extra-large) var(--md-shape-corner-extra-large) 0 0;
   max-height: 90vh;
   height: 72px;
   overflow: hidden;
@@ -235,69 +315,441 @@ pre {
   z-index: 1000;
   pointer-events: auto;
 }
+
 .player-panel.expanded {
   height: 70vh;
 }
+
 .player-handle {
   width: 40px;
   height: 4px;
-  background: var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-outline);
   border-radius: var(--md-shape-corner-full);
-  margin: 8px auto;
+  margin: 6px auto 4px;
   cursor: grab;
+  flex-shrink: 0;
 }
+
 .player-collapsed {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 16px;
+  padding: 4px 16px 10px;
 }
+
 .player-collapsed img {
   width: 56px;
   height: 56px;
-  border-radius: var(--md-shape-corner-small);
+  border-radius: var(--md-shape-corner-medium);
   background: var(--md-sys-color-surface-container-high);
   object-fit: cover;
+  flex-shrink: 0;
 }
+
 .player-meta {
   flex: 1;
   min-width: 0;
 }
+
 .player-meta #player-title {
-  font-weight: 600;
+  font: var(--md-font-title-medium);
   color: var(--md-sys-color-on-surface);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .player-meta #player-artist {
+  font: var(--md-font-body-medium);
   color: var(--md-sys-color-on-surface-variant);
-  font-size: 0.85rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .player-controls {
   display: flex;
-  gap: 12px;
+  gap: 4px;
+  align-items: center;
 }
+
 .player-controls button {
   background: transparent;
   border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--md-shape-corner-full);
   color: var(--md-sys-color-on-surface);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--md-motion-duration-short3) var(--md-motion-easing-standard);
 }
+
+.player-controls button:hover {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
 .player-expanded {
-  padding: 0 16px 16px;
+  padding: 12px 16px 16px;
   overflow-y: auto;
-  height: calc(100% - 72px);
+  height: calc(100% - 26px);
+  box-sizing: border-box;
   color: var(--md-sys-color-on-surface);
 }
+
 .player-expanded #player-queue-list {
-  color: var(--md-sys-color-on-surface);
+  color: var(--md-on-surface);
+  font: var(--md-font-body-large);
 }
+
 #player-progress {
   width: 100%;
+  margin-top: 12px;
+}
+
+.queue-row {
+  padding: 8px 12px;
+  border-radius: var(--md-shape-corner-small);
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+}
+
+.queue-row:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+/* ---------------------------------------------------------------- *
+ * Now Playing screen — app hierarchy: top app bar, big rounded cover,
+ * left-aligned title block, circular controls, Booming slider.
+ * ---------------------------------------------------------------- */
+.np-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px 24px 24px;
+  box-sizing: border-box;
+  background: var(--m3-dynamic-chrome-surface);
+  overflow-y: auto;
+}
+
+.np-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  margin-bottom: 8px;
+}
+
+.np-topbar .np-bar-title {
+  flex: 1;
+  font: var(--md-font-title-medium);
+  color: var(--md-sys-color-on-surface);
+}
+
+.np-topbar md-icon-button {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.np-topbar md-icon-button.accent-active,
+.np-topbar md-icon-button[selected] {
+  color: var(--md-primary);
+}
+
+.np-body {
+  display: flex;
+  gap: 32px;
+  flex: 1;
+  align-self: center;
+  width: 100%;
+  max-width: 980px;
+}
+
+.np-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  min-width: 320px;
+}
+
+.np-cover-block {
+  width: min(100%, 380px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.np-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--md-shape-corner-extra-large);
+  overflow: hidden;
+  background: var(--md-primary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.np-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.np-meta {
+  color: var(--md-sys-color-on-surface);
+}
+
+.np-title {
+  font: var(--md-font-headline-small);
+  font-weight: var(--md-ref-typeface-weight-bold, 700);
+  color: var(--md-sys-color-on-surface);
+}
+
+.np-subtitle {
+  font: var(--md-font-body-large);
+  color: var(--md-sys-color-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.np-separator {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.np-progress {
+  width: min(100%, 380px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.np-times {
+  display: flex;
+  justify-content: space-between;
+  font: var(--md-font-body-small);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.np-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: min(100%, 380px);
+}
+
+/* Prev/next ride in plain circles (hover tone like the app). */
+.np-controls > md-icon-button {
+  --md-icon-button-icon-size: 24px;
+}
+
+.np-controls md-icon-button.np-skip {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--md-shape-corner-full);
+  background: var(--md-sys-color-surface-container-high);
+  --md-icon-button-state-layer-height: 52px;
+  --md-icon-button-state-layer-width: 52px;
+}
+
+/* The big accent play button (primary container w/ on-container icon). */
+.np-controls md-icon-button.np-play {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--md-shape-corner-full);
+  background: var(--md-primary-container);
+  --md-icon-button-icon-size: 34px;
+  --md-icon-button-state-layer-height: 72px;
+  --md-icon-button-state-layer-width: 72px;
+  --md-icon-button-icon-color: var(--md-on-primary-container);
+  --md-icon-button-focus-icon-color: var(--md-on-primary-container);
+  --md-icon-button-hover-icon-color: var(--md-on-primary-container);
+  --md-icon-button-pressed-icon-color: var(--md-on-primary-container);
+  --md-icon-button-hover-state-layer-color: var(--md-on-primary-container);
+}
+
+.np-controls md-icon-button.accent-active,
+.np-controls md-icon-button[selected] {
+  color: var(--md-primary);
+}
+
+.np-bottombar {
+  margin-top: auto;
+  align-self: center;
+  width: min(100%, 720px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--md-sys-color-surface-container);
+  border-radius: var(--md-shape-corner-large);
+}
+
+.np-bottombar md-slider {
+  --md-slider-active-track-height: 6px;
+  --md-slider-inactive-track-height: 6px;
+}
+
+.np-bottombar #np-volume {
+  flex: 1;
+  min-width: 120px;
+}
+
+.np-bottombar #np-balance {
+  width: 110px;
+}
+
+.np-speeds {
+  display: flex;
+  gap: 4px;
+}
+
+.np-bottombar md-icon-button {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Lyrics side pane (toggled open by the top bar lyrics button). */
+.np-lyrics {
+  position: relative;
+  display: none;
+  flex-direction: column;
+  min-width: 320px;
+  max-width: 460px;
+  flex: 0.8;
+}
+
+/* ---------------------------------------------------------------- *
+ * Lyrics pane — surface text on the screen background, generous
+ * display type, karaoke accent fill intact.
+ * ---------------------------------------------------------------- */
+.lyrics-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.lyrics-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 2.2em;
+  padding: 0 8px;
+}
+
+.lyrics-title {
+  font: var(--md-font-title-medium);
+  color: var(--md-sys-color-on-surface);
+}
+
+.lyrics-source {
+  font: var(--md-font-body-small);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.lyrics-status {
+  font: var(--md-font-body-small);
+  color: var(--md-sys-color-on-surface-variant);
+  min-height: 1.2em;
+  padding: 0 8px;
+}
+
+.lyrics-body {
+  flex: 1;
+  overflow-y: auto;
+  border-radius: var(--md-shape-corner-large);
+  padding: 12px 8px;
+  scroll-behavior: smooth;
+}
+
+.lyrics-line {
+  padding: 10px 8px;
+  font: var(--md-font-body-large);
+  line-height: 1.5;
+  font-size: var(--md-sys-typescale-title-medium-size, 1rem);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: opacity 0.25s, color 0.25s;
+  user-select: none;
+  text-align: left;
+  border-radius: var(--md-shape-corner-small);
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.85;
+}
+
+.lyrics-line:hover {
+  background: var(--md-sys-color-surface-container);
+}
+
+.lyrics-line.active {
+  opacity: 1;
+  color: var(--md-sys-color-on-surface);
+  font-weight: var(--md-ref-typeface-weight-bold, 700);
+}
+
+.lyrics-line.past {
+  opacity: 0.45;
+  font-weight: var(--md-ref-typeface-weight-regular, 400);
+}
+
+.lyrics-line.upcoming {
+  opacity: 0.85;
+  font-weight: var(--md-ref-typeface-weight-regular, 400);
+}
+
+.lyrics-word {
+  position: relative;
+  display: inline-block;
+  white-space: pre;
+}
+
+.lyrics-word-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: pre;
+  color: var(--md-primary);
+  transition: width 0.18s linear;
+}
+
+.lyrics-plain {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font: var(--md-font-body-large);
+  line-height: 1.6;
+  color: var(--md-sys-color-on-surface);
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------- *
+ * Settings — edge-to-edge list, no floating boxes.
+ * ---------------------------------------------------------------- */
+.settings-list {
+  width: 100%;
+  --md-list-container-color: transparent;
+  --md-list-item-label-text-color: var(--md-sys-color-on-surface);
+  --md-list-item-label-text-size: 1rem;
+  --md-list-item-label-text-weight: var(--md-ref-typeface-weight-medium, 500);
+  --md-list-item-supporting-text-color: var(--md-sys-color-on-surface-variant);
+  --md-list-item-container-color: transparent;
+}
+
+.settings-list md-list-item {
+  cursor: default;
+}
+
+.settings-rescan {
   margin-top: 12px;
 }

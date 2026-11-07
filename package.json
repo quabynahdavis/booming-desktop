@@ -14,6 +14,7 @@
     "rust:build": "cargo build --manifest-path src-tauri/Cargo.toml"
   },
   "dependencies": {
+    "@fontsource/material-symbols-outlined": "5.3.9",
     "@material/material-color-utilities": "^0.4.0",
     "@material/web": "2.5.0",
     "@tauri-apps/api": "^2.12.0"

@@ -236,6 +236,38 @@
 }
 
 /* ---------------------------------------------------------------- *
+ * App type aliases — composite `font:` shorthands mirroring the M3
+ * scale (sizes/weights/heights use the md-sys-typescale tokens with
+ * the same fallbacks as md-typescale-styles).
+ * ---------------------------------------------------------------- */
+:root {
+  --md-font-headline-small: var(--md-sys-typescale-headline-small-weight, var(--md-ref-typeface-weight-regular, 400))
+    var(--md-sys-typescale-headline-small-size, 1.5rem)/var(--md-sys-typescale-headline-small-line-height, 2rem)
+    var(--md-sys-typescale-headline-small-font, var(--md-ref-typeface-brand));
+  --md-font-headline-medium: var(--md-sys-typescale-headline-medium-weight, var(--md-ref-typeface-weight-regular, 400))
+    var(--md-sys-typescale-headline-medium-size, 1.75rem)/var(--md-sys-typescale-headline-medium-line-height, 2.25rem)
+    var(--md-sys-typescale-headline-medium-font, var(--md-ref-typeface-brand));
+  --md-font-title-large: var(--md-sys-typescale-title-large-weight, var(--md-ref-typeface-weight-regular, 400))
+    var(--md-sys-typescale-title-large-size, 1.375rem)/var(--md-sys-typescale-title-large-line-height, 1.75rem)
+    var(--md-sys-typescale-title-large-font, var(--md-ref-typeface-brand));
+  --md-font-title-medium: var(--md-sys-typescale-title-medium-weight, var(--md-ref-typeface-weight-medium, 500))
+    var(--md-sys-typescale-title-medium-size, 1rem)/var(--md-sys-typescale-title-medium-line-height, 1.5rem)
+    var(--md-sys-typescale-title-medium-font, var(--md-ref-typeface-plain));
+  --md-font-body-large: var(--md-sys-typescale-body-large-weight, var(--md-ref-typeface-weight-regular, 400))
+    var(--md-sys-typescale-body-large-size, 1rem)/var(--md-sys-typescale-body-large-line-height, 1.5rem)
+    var(--md-sys-typescale-body-large-font, var(--md-ref-typeface-plain));
+  --md-font-body-medium: var(--md-sys-typescale-body-medium-weight, var(--md-ref-typeface-weight-regular, 400))
+    var(--md-sys-typescale-body-medium-size, 0.875rem)/var(--md-sys-typescale-body-medium-line-height, 1.25rem)
+    var(--md-sys-typescale-body-medium-font, var(--md-ref-typeface-plain));
+  --md-font-body-small: var(--md-sys-typescale-body-small-weight, var(--md-ref-typeface-weight-regular, 400))
+    var(--md-sys-typescale-body-small-size, 0.75rem)/var(--md-sys-typescale-body-small-line-height, 1rem)
+    var(--md-sys-typescale-body-small-font, var(--md-ref-typeface-plain));
+  --md-font-label-large: var(--md-sys-typescale-label-large-weight, var(--md-ref-typeface-weight-medium, 500))
+    var(--md-sys-typescale-label-large-size, 0.875rem)/var(--md-sys-typescale-label-large-line-height, 1.25rem)
+    var(--md-sys-typescale-label-large-font, var(--md-ref-typeface-plain));
+}
+
+/* ---------------------------------------------------------------- *
  * @material/web component wiring — drives every default away from the
  * stock purple/gray look onto the Booming roles above.
  * ---------------------------------------------------------------- */

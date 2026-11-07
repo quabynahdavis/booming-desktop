@@ -15,10 +15,16 @@ export function mostPlayedScreen() {
     const arr = songs as any[];
     for (const s of arr) {
       const div = document.createElement('div');
-      div.style.padding = '8px 12px';
-      div.style.cursor = 'pointer';
-      div.style.borderBottom = '1px solid var(--md-sys-color-outline-variant)';
-      div.textContent = `${s.title ?? 'Unknown'} — ${s.artist ?? ''} • ${s.album ?? ''} (${s.play_count})`;
+      div.className = 'song-row';
+      const title = document.createElement('span');
+      title.textContent = `${s.title ?? 'Unknown'}`;
+      const secondary = document.createElement('span');
+      secondary.className = 'song-row-secondary';
+      secondary.textContent = `— ${s.artist ?? ''} • ${s.album ?? ''}`;
+      const count = document.createElement('span');
+      count.className = 'song-row-count';
+      count.textContent = `${s.play_count ?? 0}`;
+      div.append(title, secondary, count);
       div.addEventListener('click', async () => {
         try { await invoke('play_song', { songId: s.id }); } catch {}
       });

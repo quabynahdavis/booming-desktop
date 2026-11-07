@@ -17,22 +17,25 @@ export function detailScreen(params: RouteParams) {
       }
       list.innerHTML = '';
       if (!songs || songs.length === 0) {
-        list.innerHTML = '<div style="padding:16px;color:var(--md-sys-color-on-surface-variant)">No tracks found</div>';
+        list.innerHTML = '<div class="song-row-empty" style="padding:16px;color:var(--md-sys-color-on-surface-variant)">No tracks found</div>';
         return;
       }
       for (const s of songs) {
         const row = document.createElement('div');
-        row.style.padding = '8px 12px';
-        row.style.cursor = 'pointer';
-        row.style.borderBottom = '1px solid var(--md-sys-color-outline-variant)';
-        row.textContent = `${s.track ? s.track + '. ' : ''}${s.title ?? 'Unknown'} — ${s.artist ?? ''}`;
+        row.className = 'song-row';
+        const title = document.createElement('span');
+        title.textContent = `${s.track ? s.track + '. ' : ''}${s.title ?? 'Unknown'}`;
+        const artist = document.createElement('span');
+        artist.className = 'song-row-secondary';
+        artist.textContent = ` — ${s.artist ?? ''}`;
+        row.append(title, artist);
         row.addEventListener('click', async () => {
           try { await invoke('play_song', { songId: s.id }); } catch {}
         });
         list.appendChild(row);
       }
     } catch (e) {
-      list.innerHTML = `<div style="padding:16px;color:var(--md-sys-color-error)">Error loading songs</div>`;
+      list.innerHTML = `<div class="song-row-empty" style="padding:16px;color:var(--md-sys-color-error)">Error loading songs</div>`;
     }
   };
 

@@ -12,39 +12,48 @@
         <md-navigation-drawer pivot="start">
           <md-list>
             <md-list-item data-route="songs" selected>
+              <md-icon slot="start">library_music</md-icon>
               <div slot="headline">Songs</div>
             </md-list-item>
             <md-list-item data-route="albums">
+              <md-icon slot="start">album</md-icon>
               <div slot="headline">Albums</div>
             </md-list-item>
             <md-list-item data-route="artists">
+              <md-icon slot="start">group</md-icon>
               <div slot="headline">Artists</div>
             </md-list-item>
             <md-list-item data-route="playlists">
+              <md-icon slot="start">playlist_play</md-icon>
               <div slot="headline">Playlists</div>
             </md-list-item>
             <md-list-item data-route="folders">
+              <md-icon slot="start">folder</md-icon>
               <div slot="headline">Folders</div>
             </md-list-item>
 
             <md-divider style="margin: 8px 0;"></md-divider>
 
             <md-list-item data-route="recently-played">
+              <md-icon slot="start">history</md-icon>
               <div slot="headline">Recently Played</div>
             </md-list-item>
             <md-list-item data-route="most-played">
+              <md-icon slot="start">trending_up</md-icon>
               <div slot="headline">Most Played</div>
             </md-list-item>
 
             <md-divider style="margin: 8px 0;"></md-divider>
 
             <md-list-item data-route="now-playing">
+              <md-icon slot="start">play_circle</md-icon>
               <div slot="headline">Now Playing</div>
             </md-list-item>
 
             <md-divider style="margin: 8px 0;"></md-divider>
 
             <md-list-item data-route="settings">
+              <md-icon slot="start">settings</md-icon>
               <div slot="headline">Settings</div>
             </md-list-item>
           </md-list>
@@ -63,9 +72,9 @@
           <div id="player-artist"></div>
         </div>
         <div class="player-controls">
-          <button id="player-prev">⏮</button>
-          <button id="player-play">▶</button>
-          <button id="player-next">⏭</button>
+          <button id="player-prev" title="Previous">⏮</button>
+          <button id="player-play" title="Play / pause">▶</button>
+          <button id="player-next" title="Next">⏭</button>
         </div>
       </div>
       <div class="player-expanded">

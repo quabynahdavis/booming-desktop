@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import "./styles.css";
 import "./theme/tokens.css";
+import "@fontsource/material-symbols-outlined/latin-400.css";
 import "@material/web/typography/md-typescale-styles.js";
 import { FALLBACK_COVER } from "./theme/fallback-cover.js";
 import { applyDynamicCover } from "./theme/dynamic-color.js";
@@ -126,8 +127,8 @@ async function pollState() {
       queueEl.innerHTML = '';
       state.queue.forEach(id => {
         const div = document.createElement('div');
+        div.className = 'queue-row';
         div.textContent = `Song ${id}`;
-        div.style.padding = '4px';
         queueEl.appendChild(div);
       });
     }

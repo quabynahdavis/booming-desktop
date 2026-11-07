@@ -11,6 +11,7 @@ export function settingsScreen() {
   container.appendChild(header);
 
   const list = document.createElement('md-list') as any;
+  list.className = 'settings-list';
   container.appendChild(list);
 
   // Theme
@@ -80,6 +81,7 @@ export function settingsScreen() {
 
   // Rescan button
   const rescanBtn = document.createElement('md-filled-tonal-button');
+  rescanBtn.className = 'settings-rescan';
   rescanBtn.textContent = 'Rescan library';
   rescanBtn.addEventListener('click', async () => {
     try { await invoke('scan_start', { root: '/tmp/music' }); } catch {}

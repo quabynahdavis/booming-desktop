@@ -17,75 +17,63 @@ interface PlaybackState {
 }
 export function nowPlayingScreen() {
   const container = document.createElement('div');
-  container.className = 'screen-container now-playing';
-  container.style.display = 'flex';
-  container.style.flexDirection = 'column';
-  container.style.padding = '32px';
-  container.style.gap = '24px';
+  container.className = 'np-screen';
+
+  // Top app bar: pane label + lyrics toggle (accent when open)
+  const topbar = document.createElement('div');
+  topbar.className = 'np-topbar';
+  const barTitle = document.createElement('div');
+  barTitle.className = 'np-bar-title';
+  barTitle.textContent = 'Now Playing';
 
   // Two-column layout: main playback column + (hidden until toggled) lyrics pane
   const layout = document.createElement('div');
-  layout.style.cssText = 'display:flex;gap:32px;flex:1;align-self:center;width:100%;max-width:1100px;';
+  layout.className = 'np-body';
 
   const mainCol = document.createElement('div');
-  mainCol.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:24px;flex:1;min-height:60vh;';
+  mainCol.className = 'np-main';
 
   const lyricsWrap = document.createElement('div');
-  lyricsWrap.style.cssText = 'display:none;flex-direction:column;min-width:320px;max-width:460px;flex:0.8;';
+  lyricsWrap.className = 'np-lyrics';
+  lyricsWrap.style.display = 'none';
 
-  // cover art
+  // cover art block: cover + left-aligned metadata below it (app look)
+  const coverBlock = document.createElement('div');
+  coverBlock.className = 'np-cover-block';
+
   const coverWrapper = document.createElement('div');
-  coverWrapper.style.position = 'relative';
-  coverWrapper.style.width = '320px';
-  coverWrapper.style.height = '320px';
-  coverWrapper.style.borderRadius = '24px';
-  coverWrapper.style.overflow = 'hidden';
-  coverWrapper.style.background = 'var(--md-sys-color-primary-container)';
-  coverWrapper.style.display = 'flex';
-  coverWrapper.style.alignItems = 'center';
-  coverWrapper.style.justifyContent = 'center';
+  coverWrapper.className = 'np-cover';
 
   const coverImg = document.createElement('img');
-  coverImg.style.width = '100%';
-  coverImg.style.height = '100%';
-  coverImg.style.objectFit = 'cover';
   coverImg.src = FALLBACK_COVER;
   coverWrapper.appendChild(coverImg);
 
   // metadata
   const meta = document.createElement('div');
-  meta.style.textAlign = 'center';
-  meta.style.color = 'var(--md-sys-color-on-surface)';
+  meta.className = 'np-meta';
 
   const titleEl = document.createElement('div');
-  titleEl.style.fontSize = '28px';
-  titleEl.style.fontWeight = '600';
+  titleEl.className = 'np-title';
   titleEl.textContent = 'No track';
-  meta.appendChild(titleEl);
 
-  const artistEl = document.createElement('div');
-  artistEl.style.fontSize = '18px';
-  artistEl.style.opacity = '0.85';
-  meta.appendChild(artistEl);
+  const subtitleRow = document.createElement('div');
+  subtitleRow.className = 'np-subtitle';
+  const artistEl = document.createElement('span');
+  const sepEl = document.createElement('span');
+  sepEl.className = 'np-separator';
+  sepEl.textContent = ' • ';
+  const albumEl = document.createElement('span');
+  subtitleRow.append(artistEl, sepEl, albumEl);
 
-  const albumEl = document.createElement('div');
-  albumEl.style.fontSize = '14px';
-  albumEl.style.opacity = '0.7';
-  meta.appendChild(albumEl);
+  meta.append(titleEl, subtitleRow);
+  coverBlock.append(coverWrapper, meta);
 
   // progress
   const progressRow = document.createElement('div');
-  progressRow.style.width = '100%';
-  progressRow.style.maxWidth = '720px';
-  progressRow.style.display = 'flex';
-  progressRow.style.flexDirection = 'column';
-  progressRow.style.gap = '8px';
+  progressRow.className = 'np-progress';
 
   const timeRow = document.createElement('div');
-  timeRow.style.display = 'flex';
-  timeRow.style.justifyContent = 'space-between';
-  timeRow.style.fontSize = '12px';
-  timeRow.style.opacity = '0.8';
+  timeRow.className = 'np-times';
   const currentTime = document.createElement('span');
   const totalTime = document.createElement('span');
   timeRow.appendChild(currentTime);
@@ -102,23 +90,24 @@ export function nowPlayingScreen() {
 
   // controls
   const controls = document.createElement('div');
-  controls.style.display = 'flex';
-  controls.style.alignItems = 'center';
-  controls.style.gap = '12px';
+  controls.className = 'np-controls';
 
   const shuffleBtn = document.createElement('md-icon-button');
   shuffleBtn.setAttribute('aria-label', 'shuffle');
   shuffleBtn.innerHTML = '<md-icon>shuffle</md-icon>';
 
   const prevBtn = document.createElement('md-icon-button');
+  prevBtn.className = 'np-skip';
   prevBtn.setAttribute('aria-label', 'previous');
   prevBtn.innerHTML = '<md-icon>skip_previous</md-icon>';
 
   const playBtn = document.createElement('md-icon-button');
+  playBtn.className = 'np-play';
   playBtn.setAttribute('aria-label', 'play-pause');
   playBtn.innerHTML = '<md-icon>play_arrow</md-icon>';
 
   const nextBtn = document.createElement('md-icon-button');
+  nextBtn.className = 'np-skip';
   nextBtn.setAttribute('aria-label', 'next');
   nextBtn.innerHTML = '<md-icon>skip_next</md-icon>';
 
@@ -131,19 +120,13 @@ export function nowPlayingScreen() {
   lyricsBtn.setAttribute('title', 'Lyrics');
   lyricsBtn.innerHTML = '<md-icon>lyrics</md-icon>';
 
-  controls.append(shuffleBtn, prevBtn, playBtn, nextBtn, repeatBtn, lyricsBtn);
+  topbar.append(barTitle, lyricsBtn);
+  controls.append(shuffleBtn, prevBtn, playBtn, nextBtn, repeatBtn);
+  mainCol.append(coverBlock, progressRow, controls);
 
-  // bottom bar for volume etc (placeholder)
+  // bottom bar for volume etc
   const bottomBar = document.createElement('div');
-  bottomBar.style.marginTop = '32px';
-  bottomBar.style.width = '100%';
-  bottomBar.style.maxWidth = '720px';
-  bottomBar.style.display = 'flex';
-  bottomBar.style.alignItems = 'center';
-  bottomBar.style.gap = '16px';
-  bottomBar.style.padding = '12px';
-  bottomBar.style.background = 'var(--md-sys-color-surface-container)';
-  bottomBar.style.borderRadius = '16px';
+  bottomBar.className = 'np-bottombar';
 
   const volumeSlider = document.createElement('md-slider');
   volumeSlider.setAttribute('id', 'np-volume');
@@ -153,14 +136,14 @@ export function nowPlayingScreen() {
   volumeSlider.style.flex = '1';
 
   const balanceSlider = document.createElement('md-slider');
+  balanceSlider.setAttribute('id', 'np-balance');
   balanceSlider.setAttribute('min', '-100');
   balanceSlider.setAttribute('max', '100');
   balanceSlider.setAttribute('value', '0');
   balanceSlider.style.width = '120px';
 
   const speedWrap = document.createElement('div');
-  speedWrap.style.display = 'flex';
-  speedWrap.style.gap = '4px';
+  speedWrap.className = 'np-speeds';
   const speeds = [0.5,0.75,1.0,1.25,1.5];
   speeds.forEach(s => {
     const b = document.createElement('md-text-button');
@@ -207,7 +190,7 @@ export function nowPlayingScreen() {
   });
   lyricsWrap.appendChild(lyricsView.el);
   layout.append(mainCol, lyricsWrap);
-  container.append(layout, dialog);
+  container.append(topbar, layout, bottomBar, dialog);
 
   // state
   let lastSongId: number | null = null;
@@ -368,6 +351,7 @@ export function nowPlayingScreen() {
       titleEl.textContent = state.current_song?.title ?? 'No track';
       artistEl.textContent = state.current_song?.artist ?? '';
       albumEl.textContent = state.current_song?.album ?? '';
+      sepEl.style.display = state.current_song?.album ? '' : 'none';
 
       if (state.duration > 0) {
         currentDuration = state.duration;
@@ -418,7 +402,7 @@ export function nowPlayingScreen() {
     try {
       shuffle = !shuffle;
       await invoke('set_shuffle', { enabled: shuffle });
-      shuffleBtn.style.color = shuffle ? 'var(--md-primary)' : '';
+      shuffleBtn.toggleAttribute('selected', shuffle);
     } catch {}
   });
   repeatBtn.addEventListener('click', async () => {
@@ -426,7 +410,7 @@ export function nowPlayingScreen() {
       repeatMode = repeatMode === 'none' ? 'one' : repeatMode === 'one' ? 'all' : 'none';
       const modeMap = { none: 'None', one: 'One', all: 'All' } as const;
       await invoke('set_repeat_mode', { mode: modeMap[repeatMode] });
-      repeatBtn.style.color = repeatMode !== 'none' ? 'var(--md-primary)' : '';
+      repeatBtn.toggleAttribute('selected', repeatMode !== 'none');
       repeatBtn.innerHTML = `<md-icon>${repeatMode === 'one' ? 'repeat_one' : 'repeat'}</md-icon>`;
     } catch {}
   });
@@ -536,7 +520,7 @@ export function nowPlayingScreen() {
   lyricsBtn.addEventListener('click', () => {
     lyricsOpen = !lyricsOpen;
     lyricsWrap.style.display = lyricsOpen ? 'flex' : 'none';
-    lyricsBtn.style.color = lyricsOpen ? 'var(--md-primary, var(--md-sys-color-primary))' : '';
+    lyricsBtn.toggleAttribute('selected', lyricsOpen);
   });
 
   // poll
