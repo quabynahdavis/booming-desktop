@@ -15,6 +15,7 @@ import { recentlyPlayedScreen } from "./screens/recently-played.js";
 import { mostPlayedScreen } from "./screens/most-played.js";
 import { settingsScreen } from "./screens/settings.js";
 import { nowPlayingScreen } from "./screens/now-playing.js";
+import { equalizerScreen } from "./screens/equalizer.js";
 
 Router.register("songs", songsScreen);
 Router.register("albums", albumsScreen);
@@ -24,6 +25,7 @@ Router.register("playlists", playlistsScreen);
 Router.register("recently-played", recentlyPlayedScreen);
 Router.register("most-played", mostPlayedScreen);
 Router.register("now-playing", nowPlayingScreen);
+Router.register("equalizer", equalizerScreen);
 Router.register("settings", settingsScreen);
 
 Router.init();

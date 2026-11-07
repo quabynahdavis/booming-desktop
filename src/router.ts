@@ -12,6 +12,7 @@ export type RouteName =
   | "recently-played"
   | "most-played"
   | "settings"
+  | "equalizer"
   | "now-playing"
   | "album-detail"
   | "artist-detail"
