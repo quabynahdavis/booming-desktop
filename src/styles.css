@@ -20,12 +20,13 @@ body {
   overflow: hidden;
 }
 
-/* Navigation drawer */
+/* Navigation drawer — chrome surface (subtle cover-art tint via
+ * --m3-dynamic-chrome-surface; plain surface-container-low by default). */
 #nav-drawer {
   width: 240px;
   min-width: 240px;
   height: 100%;
-  background: var(--md-sys-color-surface-container-low);
+  background: var(--m3-dynamic-chrome-surface);
   border-right: 1px solid var(--md-sys-color-outline-variant);
   display: flex;
   flex-direction: column;
@@ -34,7 +35,7 @@ body {
 #nav-drawer md-navigation-drawer {
   height: 100%;
   width: 100%;
-  --md-navigation-drawer-container-color: var(--md-sys-color-surface-container-low);
+  --md-navigation-drawer-container-color: var(--m3-dynamic-chrome-surface);
 }
 
 #nav-drawer md-list-item {
@@ -218,13 +219,13 @@ pre {
   min-height: 2.6em;
 }
 
-/* Sliding player panel */
+/* Sliding player panel — chrome surface (subtle cover-art tint). */
 .player-panel {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--md-sys-color-surface-container-low);
+  background: var(--m3-dynamic-chrome-surface);
   border-top: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-shape-corner-large) var(--md-shape-corner-large) 0 0;
   max-height: 90vh;

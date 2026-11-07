@@ -3,6 +3,7 @@ import "./styles.css";
 import "./theme/tokens.css";
 import "@material/web/typography/md-typescale-styles.js";
 import { FALLBACK_COVER } from "./theme/fallback-cover.js";
+import { applyDynamicCover } from "./theme/dynamic-color.js";
 import { Router } from "./router.js";
 import { songsScreen } from "./screens/songs.js";
 import { albumsScreen } from "./screens/albums.js";
@@ -110,12 +111,15 @@ async function pollState() {
     if (coverEl && state.current_song_id) {
       if (lastSongId !== state.current_song_id) {
         lastSongId = state.current_song_id;
+        let coverUrl: string | null = null;
         try {
-          const dataUrl = await invoke<string | null>('get_cover_data_url', { songId: state.current_song_id });
-          coverEl.src = dataUrl || FALLBACK_COVER;
+          coverUrl = await invoke<string | null>('get_cover_data_url', { songId: state.current_song_id });
         } catch {
-          coverEl.src = FALLBACK_COVER;
+          coverUrl = null;
         }
+        coverEl.src = coverUrl || FALLBACK_COVER;
+        // Dynamic accent scheme: real artwork → accent from art; none → static brand scheme.
+        applyDynamicCover(coverUrl);
       }
     }
     if (queueEl) {

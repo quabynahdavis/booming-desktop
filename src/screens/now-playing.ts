@@ -5,6 +5,7 @@ import { fetchLyrics } from "../lyrics/providers.js";
 import { createLyricsView } from "../lyrics/lyrics-view.js";
 import type { LyricsView } from "../lyrics/lyrics-view.js";
 import { FALLBACK_COVER } from "../theme/fallback-cover.js";
+import { applyDynamicCover } from "../theme/dynamic-color.js";
 
 interface PlaybackState {
   state: 'playing' | 'paused' | 'stopped';
@@ -381,12 +382,15 @@ export function nowPlayingScreen() {
 
       if (state.current_song_id && state.current_song_id !== lastSongId) {
         lastSongId = state.current_song_id;
+        let coverUrl: string | null = null;
         try {
-          const dataUrl = await invoke<string | null>('get_cover_data_url', { songId: state.current_song_id });
-          coverImg.src = dataUrl || FALLBACK_COVER;
+          coverUrl = await invoke<string | null>('get_cover_data_url', { songId: state.current_song_id });
         } catch {
-          coverImg.src = FALLBACK_COVER;
+          coverUrl = null;
         }
+        coverImg.src = coverUrl || FALLBACK_COVER;
+        // Same dedup'd hook as main.ts — harmless double feed on song change.
+        applyDynamicCover(coverUrl);
         void loadLyrics(state.current_song, state.duration);
       }
       lyricsView.update(state.position);

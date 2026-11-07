@@ -70,14 +70,18 @@
   --md-sys-color-tertiary-fixed-dim: #E3BADA;
   --md-sys-color-on-tertiary-fixed-variant: #5B3D57;
 
-  /* Dynamic accent scheme defaults (Task 3 overrides these at runtime). */
+  /* Dynamic accent scheme defaults (Task 3 overrides these at runtime).
+   * `*chrome-surface` is the fixed-tone blend of the accent onto
+   * surface-container-low (12%), matching dynamic-color.ts. */
   --m3-dynamic-primary: var(--md-sys-color-primary);
   --m3-dynamic-on-primary: var(--md-sys-color-on-primary);
   --m3-dynamic-primary-container: var(--md-sys-color-primary-container);
   --m3-dynamic-on-primary-container: var(--md-sys-color-on-primary-container);
   --m3-dynamic-secondary-container: var(--md-sys-color-secondary-container);
   --m3-dynamic-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --m3-dynamic-primary-fixed: var(--md-sys-color-primary-fixed);
   --m3-dynamic-surface-tint: var(--md-sys-color-primary);
+  --m3-dynamic-chrome-surface: #2D2F3C;
 }
 
 /* ---------------------------------------------------------------- *
@@ -141,7 +145,9 @@
   --m3-dynamic-on-primary-container: var(--md-sys-color-on-primary-container);
   --m3-dynamic-secondary-container: var(--md-sys-color-secondary-container);
   --m3-dynamic-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --m3-dynamic-primary-fixed: var(--md-sys-color-primary-fixed);
   --m3-dynamic-surface-tint: var(--md-sys-color-primary);
+  --m3-dynamic-chrome-surface: #E0E1EE;
 }
 
 /* ---------------------------------------------------------------- *
@@ -234,17 +240,20 @@
  * stock purple/gray look onto the Booming roles above.
  * ---------------------------------------------------------------- */
 :root {
-  /* Slider: thick rounded track + thin pill bar thumb (Booming player look). */
-  --md-slider-active-track-color: var(--md-sys-color-primary-fixed);
+  /*
+   * Slider: thick rounded track + thin pill bar thumb (Booming player look).
+   * The active track/handle accent follows the dynamic cover art scheme.
+   */
+  --md-slider-active-track-color: var(--m3-dynamic-primary-fixed, var(--md-sys-color-primary-fixed));
   --md-slider-inactive-track-color: var(--md-sys-color-surface-container-highest);
   --md-slider-active-track-height: 10px;
   --md-slider-inactive-track-height: 10px;
   --md-slider-active-track-shape: var(--md-shape-corner-full);
   --md-slider-inactive-track-shape: var(--md-shape-corner-full);
-  --md-slider-handle-color: var(--md-sys-color-primary-fixed);
-  --md-slider-focus-handle-color: var(--md-sys-color-primary-fixed);
-  --md-slider-hover-handle-color: var(--md-sys-color-primary-fixed);
-  --md-slider-pressed-handle-color: var(--md-sys-color-primary-fixed);
+  --md-slider-handle-color: var(--m3-dynamic-primary-fixed, var(--md-sys-color-primary-fixed));
+  --md-slider-focus-handle-color: var(--m3-dynamic-primary-fixed, var(--md-sys-color-primary-fixed));
+  --md-slider-hover-handle-color: var(--m3-dynamic-primary-fixed, var(--md-sys-color-primary-fixed));
+  --md-slider-pressed-handle-color: var(--m3-dynamic-primary-fixed, var(--md-sys-color-primary-fixed));
   --md-slider-handle-width: 6px;
   --md-slider-handle-height: 28px;
   --md-slider-handle-shape: var(--md-shape-corner-full);
