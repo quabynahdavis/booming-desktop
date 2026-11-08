@@ -88,5 +88,69 @@ export function settingsScreen() {
   });
   container.appendChild(rescanBtn);
 
+  // Scrobble settings
+  const scrobbleItem = document.createElement('md-list-item') as any;
+  const scrobbleHeadline = document.createElement('div');
+  scrobbleHeadline.slot = 'headline';
+  scrobbleHeadline.textContent = 'Scrobble';
+  scrobbleItem.appendChild(scrobbleHeadline);
+
+  const scrobbleSet = document.createElement('md-outlined-segmented-button-set') as any;
+  ['off','listenbrainz','lastfm'].forEach((s) => {
+    const btn = document.createElement('md-outlined-segmented-button') as any;
+    btn.label = s;
+    if (s === 'off') btn.selected = true;
+    btn.addEventListener('click', async () => {
+      await invoke('set_scrobble_source', { source: s });
+    });
+    scrobbleSet.appendChild(btn);
+  });
+  scrobbleItem.appendChild(scrobbleSet);
+
+  // Scrobble enabled toggle
+  const enabledItem = document.createElement('md-list-item') as any;
+  const enabledHeadline = document.createElement('div');
+  enabledHeadline.slot = 'headline';
+  enabledHeadline.textContent = 'Enable scrobble';
+  enabledItem.appendChild(enabledHeadline);
+  const enabledSwitch = document.createElement('md-switch') as any;
+  enabledSwitch.checked = false;
+  enabledItem.appendChild(enabledSwitch);
+
+  // ListenBrainz token
+  const lbItem = document.createElement('md-list-item') as any;
+  const lbHeadline = document.createElement('div');
+  lbHeadline.slot = 'headline';
+  lbHeadline.textContent = 'ListenBrainz token';
+  lbItem.appendChild(lbHeadline);
+  const lbInput = document.createElement('input') as any;
+  lbInput.type = 'password';
+  lbInput.placeholder = 'Optional token';
+  lbItem.appendChild(lbInput);
+
+  // Last.fm token
+  const lfmItem = document.createElement('md-list-item') as any;
+  const lfmHeadline = document.createElement('div');
+  lfmHeadline.slot = 'headline';
+  lfmHeadline.textContent = 'Last.fm token';
+  lfmItem.appendChild(lfmHeadline);
+  const lfmInput = document.createElement('input') as any;
+  lfmInput.type = 'password';
+  lfmInput.placeholder = 'Optional token';
+  lfmItem.appendChild(lfmInput);
+
+  // Save button
+  const saveBtn = document.createElement('md-filled-tonal-button');
+  saveBtn.textContent = 'Save';
+  saveBtn.addEventListener('click', async () => {
+    const newEnabled = enabledSwitch.checked;
+    const newSource = scrobbleSet.selectedOptions?.[0]?.label ?? 'off';
+    await invoke('set_scrobble_enabled', { enabled: newEnabled });
+    await invoke('set_scrobble_source', { source: newSource });
+    await invoke('set_listenbrainz_token', { token: lbInput.value });
+    await invoke('set_lastfm_token', { token: lfmInput.value });
+  });
+  container.appendChild(saveBtn);
+
   return container;
 }
