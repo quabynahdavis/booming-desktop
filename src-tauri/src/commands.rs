@@ -341,6 +341,48 @@ pub(crate) async fn set_repeat_mode(app: AppHandle, playback: State<'_, Arc<Play
 }
 
 #[tauri::command]
+pub(crate) async fn get_scrobble_settings(app: AppHandle) -> Result<crate::library::settings::Settings, String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    Ok(crate::library::settings::Settings::load(&settings_path))
+}
+
+#[tauri::command]
+pub(crate) async fn set_scrobble_enabled(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    let mut settings = crate::library::settings::Settings::load(&settings_path);
+    settings.set_scrobble_enabled(enabled);
+    settings.save(&settings_path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn set_scrobble_source(app: AppHandle, source: String) -> Result<(), String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    let mut settings = crate::library::settings::Settings::load(&settings_path);
+    settings.set_scrobble_source(source);
+    settings.save(&settings_path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn set_listenbrainz_token(app: AppHandle, token: Option<String>) -> Result<(), String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    let mut settings = crate::library::settings::Settings::load(&settings_path);
+    settings.set_listenbrainz_token(token);
+    settings.save(&settings_path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub(crate) async fn set_lastfm_token(app: AppHandle, token: Option<String>) -> Result<(), String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    let mut settings = crate::library::settings::Settings::load(&settings_path);
+    settings.set_lastfm_token(token);
+    settings.save(&settings_path).map_err(|e| e.to_string())
+}
+    #[tauri::command]
 pub(crate) async fn get_repeat_mode(playback: State<'_, Arc<PlaybackService>>) -> Result<String, String> {
     let mode = playback.get_repeat();
     let s = match mode {

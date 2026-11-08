@@ -32,6 +32,10 @@ impl Settings {
             audio_filter: "".to_string(),
             repeat_mode: "None".to_string(),
             shuffle_enabled: false,
+            scrobble_enabled: false,
+            scrobble_source: "off".to_string(),
+            listenbrainz_token: None,
+            lastfm_token: None,
         }
     }
 
@@ -41,5 +45,37 @@ impl Settings {
         }
         let data = serde_json::to_string_pretty(self).unwrap();
         fs::write(path, data)
+    }
+
+    pub fn scrobble_enabled(&self) -> bool {
+        self.scrobble_enabled
+    }
+
+    pub fn set_scrobble_enabled(&mut self, enabled: bool) {
+        self.scrobble_enabled = enabled;
+    }
+
+    pub fn scrobble_source(&self) -> &str {
+        &self.scrobble_source
+    }
+
+    pub fn set_scrobble_source(&mut self, source: String) {
+        self.scrobble_source = source;
+    }
+
+    pub fn listenbrainz_token(&self) -> Option<&str> {
+        self.listenbrainz_token.as_deref()
+    }
+
+    pub fn set_listenbrainz_token(&mut self, token: Option<String>) {
+        self.listenbrainz_token = token;
+    }
+
+    pub fn lastfm_token(&self) -> Option<&str> {
+        self.lastfm_token.as_deref()
+    }
+
+    pub fn set_lastfm_token(&mut self, token: Option<String>) {
+        self.lastfm_token = token;
     }
 }
