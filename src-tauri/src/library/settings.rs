@@ -10,6 +10,10 @@ pub struct Settings {
     pub audio_filter: String,
     pub repeat_mode: String,
     pub shuffle_enabled: bool,
+    pub scrobble_enabled: bool,
+    pub scrobble_source: String,
+    pub listenbrainz_token: Option<String>,
+    pub lastfm_token: Option<String>,
 }
 
 impl Settings {
