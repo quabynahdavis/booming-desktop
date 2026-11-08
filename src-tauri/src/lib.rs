@@ -8,6 +8,7 @@
 //!    command. Real playback arrives in M1.
 
 mod commands;
+mod scrobble;
 mod engine;
 mod library;
 mod lyrics;

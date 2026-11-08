@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use rusqlite::{params, Connection, Result as SqlResult};
+use crate::scrobble::ScrobbleEvent;
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct Song {
@@ -115,6 +116,15 @@ impl Db {
                  id INTEGER PRIMARY KEY,
                  song_id INTEGER,
                  position INTEGER
+             );
+             CREATE TABLE IF NOT EXISTS scrobble_queue (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 source TEXT NOT NULL,
+                 artist TEXT NOT NULL,
+                 title TEXT NOT NULL,
+                 track_ts_ms INTEGER NOT NULL,
+                 duration_ms INTEGER NOT NULL,
+                 hash TEXT NOT NULL UNIQUE
              );
              CREATE INDEX IF NOT EXISTS idx_songs_artist ON songs(artist);
              CREATE INDEX IF NOT EXISTS idx_songs_album ON songs(album);
@@ -512,6 +522,47 @@ impl Db {
         })?;
         rows.collect()
     }
+
+    pub fn add_scrobble_event(&self, event: &ScrobbleEvent, hash: &str) -> SqlResult<()> {
+        self.conn.execute(
+            "INSERT OR IGNORE INTO scrobble_queue (source, artist, title, track_ts_ms, duration_ms, hash) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            params![&event.source, &event.artist, &event.title, event.track_ts_ms, event.duration_ms, hash],
+        )?;
+        Ok(())
+    }
+
+    pub fn load_scrobble_queue(&self) -> SqlResult<Vec<ScrobbleEvent>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, source, artist, title, track_ts_ms, duration_ms FROM scrobble_queue ORDER BY id ASC",
+        )?;
+        let rows = stmt.query_map([], |r| {
+            Ok(ScrobbleEvent {
+                id: r.get(0)?,
+                source: r.get(1)?,
+                artist: r.get(2)?,
+                title: r.get(3)?,
+                track_ts_ms: r.get(4)?,
+                duration_ms: r.get(5)?,
+            })
+        })?;
+        let mut events = Vec::new();
+        for row in rows {
+            events.push(row?);
+        }
+        Ok(events)
+    }
+
+    pub fn clear_scrobble_queue(&self, ids: &[i64]) -> SqlResult<()> {
+        if ids.is_empty() {
+            return Ok(());
+        }
+        let placeholders: Vec<String> = ids.iter().map(|_| "?".to_string()).collect();
+        let sql = format!("DELETE FROM scrobble_queue WHERE id IN ({})", placeholders.join(","));
+        let params_vec = rusqlite::params_from_iter(ids.iter().map(|&i| i as i64));
+        self.conn.execute(&sql, params_vec)?;
+        Ok(())
+    }
+
 }
 
 #[cfg(test)]
