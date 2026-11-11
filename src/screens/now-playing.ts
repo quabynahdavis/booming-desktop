@@ -6,6 +6,7 @@ import { createLyricsView } from "../lyrics/lyrics-view.js";
 import type { LyricsView } from "../lyrics/lyrics-view.js";
 import { FALLBACK_COVER } from "../theme/fallback-cover.js";
 import { applyDynamicCover } from "../theme/dynamic-color.js";
+import { t } from "../i18n/index.js";
 
 interface PlaybackState {
   state: 'playing' | 'paused' | 'stopped';
@@ -24,7 +25,7 @@ export function nowPlayingScreen() {
   topbar.className = 'np-topbar';
   const barTitle = document.createElement('div');
   barTitle.className = 'np-bar-title';
-  barTitle.textContent = 'Now Playing';
+  barTitle.textContent = t('nowPlaying.NowPlaying');
 
   // Two-column layout: main playback column + (hidden until toggled) lyrics pane
   const layout = document.createElement('div');
@@ -54,7 +55,7 @@ export function nowPlayingScreen() {
 
   const titleEl = document.createElement('div');
   titleEl.className = 'np-title';
-  titleEl.textContent = 'No track';
+  titleEl.textContent = t('screen.noTrack');
 
   const subtitleRow = document.createElement('div');
   subtitleRow.className = 'np-subtitle';
@@ -117,7 +118,7 @@ export function nowPlayingScreen() {
 
   const lyricsBtn = document.createElement('md-icon-button');
   lyricsBtn.setAttribute('aria-label', 'lyrics');
-  lyricsBtn.setAttribute('title', 'Lyrics');
+  lyricsBtn.setAttribute('title', t('nowPlaying.Lyrics'));
   lyricsBtn.innerHTML = '<md-icon>lyrics</md-icon>';
 
   topbar.append(barTitle, lyricsBtn);
@@ -166,7 +167,7 @@ export function nowPlayingScreen() {
   dialog.id = 'sleep-timer-dialog';
   const dialogTitle = document.createElement('div');
   dialogTitle.slot = 'headline';
-  dialogTitle.textContent = 'Sleep Timer';
+  dialogTitle.textContent = t('nowPlaying.SleepTimer');
   const dialogContent = document.createElement('div');
   dialogContent.innerHTML = `
     <div style="display:flex;gap:8px;margin:8px 0;">
@@ -174,9 +175,9 @@ export function nowPlayingScreen() {
       <button data-preset="30">30m</button>
       <button data-preset="60">60m</button>
     </div>
-    <md-text-field id="sleep-minutes" type="number" label="Minutes" value="30"></md-text-field>
+    <md-text-field id="sleep-minutes" type="number" label="${t('nowPlaying.Minutes')}" value="30"></md-text-field>
     <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
-      <md-text-button id="sleep-cancel">Cancel</md-text-button>
+      <md-text-button id="sleep-cancel">${t('nowPlaying.Cancel')}</md-text-button>
       <md-filled-button id="sleep-set">Set</md-filled-button>
     </div>
   `;
@@ -213,7 +214,7 @@ export function nowPlayingScreen() {
     lyricsView.setHeader(song?.title ?? null, song?.artist ?? null);
     if (!song?.title || !song?.artist) {
       lyricsView.setLyrics(null, null, null);
-      lyricsView.setStatus('No track playing');
+      lyricsView.setStatus(t('screen.NoTrackPlaying'));
       return;
     }
     lyricsView.setLyrics(null, null, null);
@@ -233,7 +234,7 @@ export function nowPlayingScreen() {
       }
     }
 
-    lyricsView.setStatus('Loading lyrics…');
+    lyricsView.setStatus(t('nowPlaying.LoadingLyrics'));
     const durationSecs = song.duration || (fallbackDuration > 0 ? fallbackDuration : null);
     let res: Awaited<ReturnType<typeof fetchLyrics>> | null = null;
     try {
@@ -244,12 +245,12 @@ export function nowPlayingScreen() {
     if (token !== lyricsLoadToken) return; // a newer load superseded this one
     if (!res || !res.found) {
       lyricsView.setLyrics(null, null, null);
-      lyricsView.setStatus('No lyrics found');
+      lyricsView.setStatus(t('screen.NoLyricsFound'));
       return;
     }
     if (res.instrumental) {
       lyricsView.setLyrics(null, null, null);
-      lyricsView.setStatus('Instrumental track — no lyrics');
+      lyricsView.setStatus(t('screen.InstrumentalTrack'));
       return;
     }
     if (res.syncedLyrics) {
@@ -267,7 +268,7 @@ export function nowPlayingScreen() {
   function applyLyricsText(raw: string, source: string) {
     if (!raw.trim()) {
       lyricsView.setLyrics(null, null, null);
-      lyricsView.setStatus('Lyrics file is empty');
+      lyricsView.setStatus(t('screen.LyricsFileEmpty'));
       return;
     }
     const parsed = parseLrc(raw);
@@ -291,7 +292,7 @@ export function nowPlayingScreen() {
   editDialog.id = 'lyrics-editor-dialog';
   const editTitle = document.createElement('div');
   editTitle.slot = 'headline';
-  editTitle.textContent = 'Edit lyrics (LRC)';
+  editTitle.textContent = t('nowPlaying.EditLyrics');
   const editContent = document.createElement('div');
   editContent.style.cssText = 'display:flex;flex-direction:column;gap:8px;min-width:560px;';
   const editBar = document.createElement('div');
@@ -307,9 +308,9 @@ export function nowPlayingScreen() {
   const editActions = document.createElement('div');
   editActions.slot = 'actions';
   const editCancel = document.createElement('md-text-button');
-  editCancel.textContent = 'Cancel';
+  editCancel.textContent = t('nowPlaying.Cancel');
   const editSave = document.createElement('md-filled-button');
-  editSave.textContent = 'Save sidecar';
+  editSave.textContent = t('nowPlaying.SaveSidecar');
   editActions.append(editCancel, editSave);
   editDialog.append(editTitle, editContent, editActions);
   container.append(editDialog);
@@ -348,7 +349,7 @@ export function nowPlayingScreen() {
   async function updateState() {
     try {
       const state = await invoke<PlaybackState>('get_playback_state');
-      titleEl.textContent = state.current_song?.title ?? 'No track';
+      titleEl.textContent = state.current_song?.title ?? t('screen.noTrack');
       artistEl.textContent = state.current_song?.artist ?? '';
       albumEl.textContent = state.current_song?.album ?? '';
       sepEl.style.display = state.current_song?.album ? '' : 'none';
@@ -483,7 +484,7 @@ export function nowPlayingScreen() {
         minutesField.value = String(Math.ceil(status.remaining_secs / 60));
       }
       dialog.show();
-      dialogTitle.textContent = status.enabled ? `Sleep Timer (${formatTime(status.remaining_secs)})` : 'Sleep Timer';
+      dialogTitle.textContent = status.enabled ? t('nowPlaying.SleepTimerActive', { time: formatTime(status.remaining_secs) }) : t('nowPlaying.SleepTimer');
       if (sleepPoll) clearInterval(sleepPoll);
       sleepPoll = window.setInterval(async () => {
         try {

@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { t } from "../i18n/index.js";
 
 export function settingsScreen() {
   const container = document.createElement('div');
@@ -6,7 +7,7 @@ export function settingsScreen() {
   const header = document.createElement('div');
   header.className = 'screen-header';
   const h1 = document.createElement('h1');
-  h1.textContent = 'Settings';
+  h1.textContent = t('screen.settings');
   header.appendChild(h1);
   container.appendChild(header);
 
@@ -18,15 +19,15 @@ export function settingsScreen() {
   const themeItem = document.createElement('md-list-item') as any;
   const themeHeadline = document.createElement('div');
   themeHeadline.slot = 'headline';
-  themeHeadline.textContent = 'Theme';
+  themeHeadline.textContent = t('settings.Theme');
   themeItem.appendChild(themeHeadline);
   const themeSet = document.createElement('md-outlined-segmented-button-set') as any;
-  ['system','light','dark'].forEach((t) => {
+  ['system','light','dark'].forEach((tVal) => {
     const btn = document.createElement('md-outlined-segmented-button') as any;
-    btn.label = t;
-    if (t === 'system') btn.selected = true;
+    btn.label = tVal;
+    if (tVal === 'system') btn.selected = true;
     btn.addEventListener('click', () => {
-      localStorage.setItem('theme', t);
+      localStorage.setItem('theme', tVal);
     });
     themeSet.appendChild(btn);
   });
@@ -37,7 +38,7 @@ export function settingsScreen() {
   const rgItem = document.createElement('md-list-item') as any;
   const rgHeadline = document.createElement('div');
   rgHeadline.slot = 'headline';
-  rgHeadline.textContent = 'ReplayGain mode';
+  rgHeadline.textContent = t('settings.ReplayGainMode');
   rgItem.appendChild(rgHeadline);
   const rgSet = document.createElement('md-outlined-segmented-button-set') as any;
   ['off','track','album'].forEach((m) => {
@@ -57,7 +58,7 @@ export function settingsScreen() {
   const gapItem = document.createElement('md-list-item') as any;
   const gapHeadline = document.createElement('div');
   gapHeadline.slot = 'headline';
-  gapHeadline.textContent = 'Gapless playback';
+  gapHeadline.textContent = t('settings.GaplessPlayback');
   gapItem.appendChild(gapHeadline);
   const gapSwitch = document.createElement('md-switch') as any;
   gapSwitch.checked = false;
@@ -68,10 +69,10 @@ export function settingsScreen() {
   const folderItem = document.createElement('md-list-item') as any;
   const folderHeadline = document.createElement('div');
   folderHeadline.slot = 'headline';
-  folderHeadline.textContent = 'Library folders';
+  folderHeadline.textContent = t('settings.LibraryFolders');
   folderItem.appendChild(folderHeadline);
   const addBtn = document.createElement('md-icon-button') as any;
-  addBtn.setAttribute('aria-label', 'Add folder');
+  addBtn.setAttribute('aria-label', t('settings.AddFolder'));
   addBtn.textContent = '+';
   addBtn.addEventListener('click', async () => {
     try { await invoke('scan_start', { root: '/tmp/music' }); } catch {}
@@ -82,7 +83,7 @@ export function settingsScreen() {
   // Rescan button
   const rescanBtn = document.createElement('md-filled-tonal-button');
   rescanBtn.className = 'settings-rescan';
-  rescanBtn.textContent = 'Rescan library';
+  rescanBtn.textContent = t('settings.RescanLibrary');
   rescanBtn.addEventListener('click', async () => {
     try { await invoke('scan_start', { root: '/tmp/music' }); } catch {}
   });
@@ -92,7 +93,7 @@ export function settingsScreen() {
   const scrobbleItem = document.createElement('md-list-item') as any;
   const scrobbleHeadline = document.createElement('div');
   scrobbleHeadline.slot = 'headline';
-  scrobbleHeadline.textContent = 'Scrobble';
+  scrobbleHeadline.textContent = t('settings.Scrobble');
   scrobbleItem.appendChild(scrobbleHeadline);
 
   const scrobbleSet = document.createElement('md-outlined-segmented-button-set') as any;
@@ -111,7 +112,7 @@ export function settingsScreen() {
   const enabledItem = document.createElement('md-list-item') as any;
   const enabledHeadline = document.createElement('div');
   enabledHeadline.slot = 'headline';
-  enabledHeadline.textContent = 'Enable scrobble';
+  enabledHeadline.textContent = t('settings.EnableScrobble');
   enabledItem.appendChild(enabledHeadline);
   const enabledSwitch = document.createElement('md-switch') as any;
   enabledSwitch.checked = false;
@@ -121,7 +122,7 @@ export function settingsScreen() {
   const lbItem = document.createElement('md-list-item') as any;
   const lbHeadline = document.createElement('div');
   lbHeadline.slot = 'headline';
-  lbHeadline.textContent = 'ListenBrainz token';
+  lbHeadline.textContent = t('settings.ListenBrainzToken');
   lbItem.appendChild(lbHeadline);
   const lbInput = document.createElement('input') as any;
   lbInput.type = 'password';
@@ -132,7 +133,7 @@ export function settingsScreen() {
   const lfmItem = document.createElement('md-list-item') as any;
   const lfmHeadline = document.createElement('div');
   lfmHeadline.slot = 'headline';
-  lfmHeadline.textContent = 'Last.fm token';
+  lfmHeadline.textContent = t('settings.LastFmToken');
   lfmItem.appendChild(lfmHeadline);
   const lfmInput = document.createElement('input') as any;
   lfmInput.type = 'password';
@@ -141,7 +142,7 @@ export function settingsScreen() {
 
   // Save button
   const saveBtn = document.createElement('md-filled-tonal-button');
-  saveBtn.textContent = 'Save';
+  saveBtn.textContent = t('settings.Save');
   saveBtn.addEventListener('click', async () => {
     const newEnabled = enabledSwitch.checked;
     const newSource = scrobbleSet.selectedOptions?.[0]?.label ?? 'off';
