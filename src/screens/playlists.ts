@@ -1,6 +1,7 @@
 import { screenContainer } from "./common.js";
+import { t } from "../i18n/index.js";
 
 export function playlistsScreen() {
-  const container = screenContainer('Playlists', document.createElement('div'));
+  const container = screenContainer(t('screen.playlists'), document.createElement('div'));
   return container;
 }

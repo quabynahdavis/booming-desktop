@@ -82,6 +82,8 @@ pub fn run() {
             commands::set_eq_bands,
             commands::load_eq_preset,
             commands::import_autoeq,
+            commands::get_locale,
+            commands::set_locale,
         ])
         .setup(|app| {
             // set app handle for events

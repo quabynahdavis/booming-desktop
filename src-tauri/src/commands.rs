@@ -449,3 +449,21 @@ pub(crate) async fn set_speed(playback: State<'_, Arc<PlaybackService>>, speed: 
     playback.set_speed(speed);
     Ok(())
 }
+
+#[tauri::command]
+pub(crate) async fn get_locale(app: AppHandle) -> Result<String, String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    let settings = Settings::load(&settings_path);
+    Ok(settings.locale)
+}
+
+#[tauri::command]
+pub(crate) async fn set_locale(app: AppHandle, locale: String) -> Result<(), String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let settings_path = app_data_dir.join("settings.json");
+    let mut settings = Settings::load(&settings_path);
+    settings.locale = locale;
+    settings.save(&settings_path).map_err(|e| e.to_string())
+}
+

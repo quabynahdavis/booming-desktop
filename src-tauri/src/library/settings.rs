@@ -14,6 +14,7 @@ pub struct Settings {
     pub scrobble_source: String,
     pub listenbrainz_token: Option<String>,
     pub lastfm_token: Option<String>,
+    pub locale: String,
 }
 
 impl Settings {
@@ -36,6 +37,7 @@ impl Settings {
             scrobble_source: "off".to_string(),
             listenbrainz_token: None,
             lastfm_token: None,
+            locale: "en".to_string(),
         }
     }
 

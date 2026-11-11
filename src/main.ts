@@ -16,6 +16,8 @@ import { mostPlayedScreen } from "./screens/most-played.js";
 import { settingsScreen } from "./screens/settings.js";
 import { nowPlayingScreen } from "./screens/now-playing.js";
 import { equalizerScreen } from "./screens/equalizer.js";
+import { initLocale } from "./i18n/index.js";
+import { t } from "./i18n/index.js";
 
 Router.register("songs", songsScreen);
 Router.register("albums", albumsScreen);
@@ -28,7 +30,7 @@ Router.register("now-playing", nowPlayingScreen);
 Router.register("equalizer", equalizerScreen);
 Router.register("settings", settingsScreen);
 
-Router.init();
+initLocale().then(() => { Router.init(); });
 
 interface Song {
   id: number;
@@ -104,7 +106,7 @@ nextBtn?.addEventListener('click', async () => {
 async function pollState() {
   try {
     const state = await invoke<PlaybackState>('get_playback_state');
-    if (titleEl) titleEl.textContent = state.current_song?.title ?? 'No track';
+    if (titleEl) titleEl.textContent = state.current_song?.title ?? t('screen.noTrack');
     if (artistEl) artistEl.textContent = state.current_song?.artist ?? '';
     if (playBtn) playBtn.textContent = state.state === 'playing' ? '⏸' : '▶';
     if (progressEl && state.duration > 0) {
@@ -130,7 +132,7 @@ async function pollState() {
       state.queue.forEach(id => {
         const div = document.createElement('div');
         div.className = 'queue-row';
-        div.textContent = `Song ${id}`;
+        div.textContent = t('player.Song', { id });
         queueEl.appendChild(div);
       });
     }

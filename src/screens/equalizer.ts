@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
+import { t } from "../i18n/index.js";
 
 const BAND_CENTERS_HZ = [
   25, 40, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000,
@@ -12,7 +13,7 @@ export function equalizerScreen(): HTMLElement {
   const header = document.createElement("div");
   header.className = "screen-header";
   const h1 = document.createElement("h1");
-  h1.textContent = "Equalizer";
+  h1.textContent = t('screen.equalizer');
   header.appendChild(h1);
   container.appendChild(header);
 
@@ -23,7 +24,7 @@ export function equalizerScreen(): HTMLElement {
   enableSwitch.setAttribute("id", "eq-enable");
   const enableLabel = document.createElement("label");
   enableLabel.htmlFor = "eq-enable";
-  enableLabel.textContent = "Enable Equalizer";
+  enableLabel.textContent = t('equalizer.EnableEqualizer');
   enableLabel.style.marginLeft = "12px";
   enableLabel.style.cursor = "pointer";
   enableWrap.append(enableSwitch, enableLabel);
@@ -84,7 +85,7 @@ export function equalizerScreen(): HTMLElement {
   presetsWrap.style.marginTop = "24px";
   container.appendChild(presetsWrap);
 
-  const presets = ["Flat", "Bass Boost", "Treble Boost"];
+  const presets = [t('equalizer.Flat'), t('equalizer.BassBoost'), t('equalizer.TrebleBoost')];
   for (const name of presets) {
     const btn = document.createElement("md-text-button");
     btn.textContent = name;
@@ -99,7 +100,7 @@ export function equalizerScreen(): HTMLElement {
 
   // Reset button
   const resetBtn = document.createElement("md-text-button");
-  resetBtn.textContent = "Reset";
+  resetBtn.textContent = t('equalizer.Reset');
   resetBtn.style.marginLeft = "auto";
   resetBtn.addEventListener("click", async () => {
     try {
@@ -117,7 +118,7 @@ export function equalizerScreen(): HTMLElement {
   importWrap.style.paddingTop = "16px";
   importWrap.style.borderTop = "1px solid var(--md-sys-color-outline-variant)";
   const importBtn = document.createElement("md-filled-tonal-button");
-  importBtn.textContent = "Import AutoEq";
+  importBtn.textContent = t('equalizer.ImportAutoEq');
   importBtn.addEventListener("click", async () => {
     try {
       const filePath = await open({
